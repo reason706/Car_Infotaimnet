@@ -1,0 +1,160 @@
+{
+  "app_name": "DriveHub",
+  "personality": "7 Dark-First Utility DARK",
+  "personality_one_liner": "A highly glanceable, high-contrast operational command center that prioritizes live metrics and minimizes driver distraction.",
+  "color": {
+    "surface": "#090A0C",
+    "onSurface": "#FFFFFF",
+    "surfaceSecondary": "#15171C",
+    "onSurfaceSecondary": "#A0A5B5",
+    "surfaceTertiary": "#21242C",
+    "onSurfaceTertiary": "#D1D4DC",
+    "surfaceInverse": "#F3F4F6",
+    "onSurfaceInverse": "#090A0C",
+    "brand": "#FF6D00",
+    "brandPrimary": "#FF6D00",
+    "onBrandPrimary": "#000000",
+    "brandSecondary": "#E65100",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#4D2100",
+    "onBrandTertiary": "#FFD1B3",
+    "success": "#00E676",
+    "onSuccess": "#000000",
+    "warning": "#FFEA00",
+    "onWarning": "#000000",
+    "error": "#FF1744",
+    "onError": "#FFFFFF",
+    "border": "#2C2F36",
+    "borderStrong": "#454955",
+    "divider": "#1F2128"
+  },
+  "typography": {
+    "displayFontFamily": "Barlow Condensed",
+    "textFontFamily": "DM Sans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous spacing but zero decorative padding. All touch targets MUST be at least 48x48pt for driving safety. Use strict grids for metrics.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 4,
+    "md": 8,
+    "lg": 16,
+    "pill": 999
+  },
+  "shadow_tier": 0,
+  "navigation": "drawer",
+  "icon_set": "MaterialCommunityIcons",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [],
+    "dont's": [
+      "No blur or glassmorphism. Automotive displays require maximum contrast, instant glanceability, and high rendering performance. Rely on solid surface hierarchy and borders."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Cockpit Home",
+      "purpose": "A split-screen driving dashboard providing simultaneous access to map, media, and vehicle metrics.",
+      "states": {
+        "loading": "Centered dark spinner with 'Initializing Systems...'",
+        "empty": "N/A - System always displays base metrics and map.",
+        "error": "Error icon with 'Sensor Connection Lost' and a Retry button."
+      },
+      "layout": "Landscape optimized. Left persistent rail (80px wide) for main navigation. Remaining screen is split: Left column (40% width) containing Vehicle Dashboard metrics at top and Media Now Playing card at bottom. Right column (60% width) is a full-bleed map view with a floating Voice Command mic overlaid on the top right."
+    },
+    {
+      "name": "Navigation",
+      "purpose": "Full-screen map navigation with route planning and live ETA.",
+      "states": {
+        "loading": "Skeleton of the side panel over a dark map grid.",
+        "empty": "Prompt to 'Search Destination' with a large CTA.",
+        "error": "Map unavailable error with a retry button."
+      },
+      "layout": "Full-bleed map background. A floating, solid surfaceSecondary side panel on the left (350px wide) containing the search input, turn-by-turn directions, ETA, and recent destinations."
+    },
+    {
+      "name": "Media Hub",
+      "purpose": "Entertainment center for music and video playback (when parked).",
+      "states": {
+        "loading": "Skeleton grid for album artwork.",
+        "empty": "Icon of a music note with 'No Media Connected' and 'Browse Library' CTA.",
+        "error": "Failed to load media message with a retry button."
+      },
+      "layout": "A 3-column grid of large square album art cards for easy tapping. A persistent 'Now Playing' bar is anchored at the bottom of the screen spanning full width."
+    },
+    {
+      "name": "Phone Contacts",
+      "purpose": "Hands-free communication hub with dialer and recent calls.",
+      "states": {
+        "loading": "Skeleton rows for contacts.",
+        "empty": "'No Contacts Found' with a sync button.",
+        "error": "Failed to sync contacts message."
+      },
+      "layout": "Split view: Left side (50%) is a list of recent calls and favorite contacts with large row heights. Right side (50%) features a massive, high-contrast numeric dialpad."
+    },
+    {
+      "name": "Vehicle Dashboard",
+      "purpose": "Dedicated full-screen diagnostic and performance metrics display.",
+      "states": {
+        "loading": "Gauges at zero with a 'Reading OBD-II...' status.",
+        "empty": "N/A",
+        "error": "OBD-II Connection Failed with a large reconnect button."
+      },
+      "layout": "Three large circular or semi-circular gauges (Speed, RPM, Fuel/Battery) aligned horizontally. Below them, trip stats and tire pressure shown in large metric blocks using Barlow Condensed."
+    }
+  ],
+  "images": {
+    "map_background": {
+      "url": "https://images.unsplash.com/photo-1618861859575-b6e43d10922a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHxHUFMlMjBuYXZpZ2F0aW9uJTIwbWFwJTIwaW50ZXJmYWNlJTIwZGFyayUyMG1vZGV8ZW58MHx8fHwxNzg3MTU2OTM1fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Dark mode GPS navigation map interface"
+    },
+    "album_art_synthwave": {
+      "url": "https://images.unsplash.com/photo-1643914543607-7f755947dd70?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwxfHxhZXN0aGV0aWMlMjBzeW50aHdhdmUlMjBhbGJ1bSUyMGFydCUyMGNvdmVyfGVufDB8fHx8MTc4NzE1NjkzNXww&ixlib=rb-4.1.0&q=85",
+      "alt": "Aesthetic synthwave album art cover"
+    },
+    "contact_avatar_1": {
+      "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwcGhvdG9ncmFwaHl8ZW58MHx8fHwxNzg3MTU2OTM1fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Smiling professional woman"
+    },
+    "contact_avatar_2": {
+      "url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwcGhvdG9ncmFwaHl8ZW58MHx8fHwxNzg3MTU2OTM1fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Professional business portrait of a woman in a gray jacket"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the Dark-First Utility guidelines. No blur or glassmorphism. Use solid surface hierarchy.",
+    "The app MUST be locked to horizontal/landscape layout, simulating a car dashboard.",
+    "Touch targets are critical for safety: Ensure all buttons, tabs, and interactive rows are at least 48x48pt.",
+    "Use 'Barlow Condensed' heavily for numbers, speed, RPM, ETA, and large metric displays to emulate physical car gauges.",
+    "The Home screen should not use standard bottom tabs. Instead, construct a persistent vertical rail on the left side, or use a Drawer navigator configured as a permanent side menu to mimic Rivian/CarPlay style layout.",
+    "Use high contrast colors: Obsidian background (#090A0C) with Amber/Orange (#FF6D00) for primary actions and active states.",
+    "Avoid decorative elements. Every visual component must serve a functional, glanceable purpose.",
+    "For the map screen, overlay a top-to-bottom gradient scrim if placing text directly over the map, or use solid floating panels for contrast."
+  ]
+}
