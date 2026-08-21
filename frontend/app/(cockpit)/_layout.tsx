@@ -1,21 +1,23 @@
 import React from 'react';
-import { Slot } from 'expo-router';
+import { Slot, usePathname } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/src/theme';
 import { PlayerProvider } from '@/src/state/player';
 import { BottomControlBar } from '@/src/components/BottomControlBar';
-import { NowPlayingOverlay } from '@/src/components/NowPlayingOverlay';
+import { MusicPlayerWidget } from '@/src/components/MusicPlayerWidget';
 import { ToastProvider, useToast } from '@/src/components/Toast';
 
 function CockpitInner() {
   const toast = useToast();
+  const pathname = usePathname();
+  const isHome = pathname === '/' || pathname === '/(cockpit)' || pathname.endsWith('/index') || pathname.endsWith('/cockpit/');
   return (
     <View style={styles.root}>
       <View style={styles.body}>
         <Slot />
       </View>
-      <NowPlayingOverlay />
+      {pathname.includes('/widgets') || pathname.includes('/media') ? null : <MusicPlayerWidget movable={isHome} compact={isHome} />}
       <BottomControlBar showToast={toast.show} />
     </View>
   );

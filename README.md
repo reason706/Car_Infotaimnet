@@ -11,8 +11,8 @@ The project is designed as a realistic cockpit prototype: the backend provides s
 - Mapbox navigation with route search, recentering, map styles, navigation zoom, and directional vehicle arrow.
 - Outside weather from Open-Meteo with GPS-based lookup and vehicle-sensor fallback.
 - Cabin climate controls, gear selector, lighting controls, tire metrics, fuel range, and drive status.
-- Media hub with offline audio import, radio stations by country, Spotify and YouTube Music provider surfaces, and a global now-playing overlay.
-- Draggable music overlay with play/pause, previous, next, and close controls.
+- Media hub with local audio import, album organization, favorites, searchable country radio, Spotify and YouTube Music provider surfaces, and a shared music player widget.
+- Draggable home music player with play/pause, previous, next, queue-aware radio playback, and shared task-bar volume control.
 - Contacts, call history, voice commands, destination search, and vehicle metrics API.
 - Dark-first automotive UI using Barlow Condensed, DM Sans, and Material Community Icons.
 
@@ -130,7 +130,7 @@ The cockpit uses Open-Meteo for current weather. It does not require an API key.
 
 ### Radio
 
-Country-based radio stations are loaded from the public Radio Browser directory. Station availability depends on the directory and each station's stream URL.
+Country-based radio stations are loaded from the public Radio Browser directory. The media hub supports searchable countries, station favorites, and queue playback within the selected country. Station availability depends on the directory and each station's stream URL.
 
 ### Spotify and YouTube Music
 
@@ -138,10 +138,12 @@ The media hub provides in-app provider surfaces. Production account playback req
 
 ## Media Behavior
 
-- Offline audio can be imported from the device with the Offline source picker.
+- Local audio can be imported from the device with the Local source picker.
 - Imported track metadata and local URIs are persisted locally.
-- Radio stations play through the shared player flow where the browser or platform permits the stream.
-- The now-playing overlay remains available across cockpit screens and can be moved or closed.
+- Local tracks can be grouped into albums, played with album-scoped next/previous queues, favorited, and removed.
+- Radio stations play through the shared player flow where the browser or platform permits the stream, with the next station shown in the player widget.
+- The music player widget appears in the media hub, overlays the home cockpit, and can be dragged within the viewport.
+- Volume is controlled from the task bar and is shared with active web audio playback.
 - Provider playback behavior depends on the provider's embed, account, and platform restrictions.
 
 ## Design Direction

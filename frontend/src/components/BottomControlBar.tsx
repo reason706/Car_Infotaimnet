@@ -3,6 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
+import { usePlayer } from '@/src/state/player';
+import { VolumeSlider } from '@/src/components/VolumeSlider';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -15,6 +17,7 @@ export function BottomControlBar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const player = usePlayer();
   const [defrostFront, setDefrostFront] = useState(false);
   const [defrostRear, setDefrostRear] = useState(false);
   const [tempL, setTempL] = useState(20);
@@ -22,7 +25,6 @@ export function BottomControlBar({
   const [fanLevel, setFanLevel] = useState(3);
   const [seatLLevel, setSeatLLevel] = useState(1);
   const [seatRLevel, setSeatRLevel] = useState(1);
-  const [volume, setVolume] = useState(0.6);
 
   const notify = (m: string) => showToast?.(m);
 
@@ -45,6 +47,12 @@ export function BottomControlBar({
         testID="ctrl-media"
         active={pathname.includes('/media')}
         onPress={() => router.push('/(cockpit)/media')}
+      />
+      <IconBtn
+        icon="view-dashboard-outline"
+        testID="ctrl-widgets"
+        active={pathname.includes('/widgets')}
+        onPress={() => router.push('/(cockpit)/widgets')}
       />
       <IconBtn
         icon="package-variant-closed"
@@ -100,18 +108,7 @@ export function BottomControlBar({
         onPress={() => setDefrostRear(v => !v)}
       />
 
-      <View style={styles.volCluster} testID="volume-slider">
-        <Pressable onPress={() => setVolume(Math.max(0, volume - 0.1))} testID="ctrl-vol-down" hitSlop={6}>
-          <MaterialCommunityIcons name="chevron-left" size={22} color={theme.colors.onSurfaceSecondary} />
-        </Pressable>
-        <MaterialCommunityIcons name={volume === 0 ? 'volume-mute' : 'volume-high'} size={22} color={theme.colors.onSurface} />
-        <View style={styles.volTrack}>
-          <View style={[styles.volFill, { width: `${volume * 100}%` }]} />
-        </View>
-        <Pressable onPress={() => setVolume(Math.min(1, volume + 0.1))} testID="ctrl-vol-up" hitSlop={6}>
-          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceSecondary} />
-        </Pressable>
-      </View>
+      <View style={styles.volCluster}><VolumeSlider value={player.volume} onChange={player.setVolume} testID="volume-slider" /></View>
     </View>
   );
 }
@@ -182,10 +179,5 @@ const styles = StyleSheet.create({
   tempCol: { alignItems: 'center', minWidth: 42 },
   tempVal: { fontFamily: theme.font.display, fontSize: 22, color: theme.colors.onSurface, lineHeight: 24, letterSpacing: 0.5 },
   tempDeg: { fontFamily: theme.font.display, fontSize: 14, color: theme.colors.onSurface },
-  volCluster: {
-    flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.sm, height: 44, minWidth: 190,
-  },
-  volTrack: { flex: 1, height: 4, borderRadius: 2, backgroundColor: theme.colors.border, overflow: 'hidden' },
-  volFill: { height: '100%', backgroundColor: theme.colors.brand },
+  volCluster: { width: 190, paddingHorizontal: theme.spacing.sm, height: 44, justifyContent: 'center' },
 });

@@ -8,9 +8,11 @@ const IMPORTED_TRACKS_KEY = 'media.imported-tracks';
 type PlayerState = {
   tracks: Track[];
   current: Track | null;
+  upNext: Track | null;
   index: number;
   isPlaying: boolean;
   progress: number; // 0..1
+  volume: number; // 0..1
 };
 
 type Ctx = PlayerState & {
@@ -22,7 +24,9 @@ type Ctx = PlayerState & {
   setByTitle: (title: string) => Track | null;
   playExternal: (track: Track, queue?: Track[]) => void;
   addTracks: (items: Track[]) => void;
+  removeTrack: (id: string) => void;
   close: () => void;
+  setVolume: (value: number) => void;
 };
 
 const PlayerCtx = createContext<Ctx | null>(null);
@@ -32,6 +36,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [index, setIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [volume, setVolume] = useState(0.7);
   const [externalCurrent, setExternalCurrent] = useState<Track | null>(null);
   const [externalQueue, setExternalQueue] = useState<Track[]>([]);
   const [externalIndex, setExternalIndex] = useState(0);
@@ -64,10 +69,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (Platform.OS !== 'web' || !externalCurrent?.streamUrl || !isPlaying) return;
     stopExternalAudio();
     const audio = new Audio(externalCurrent.streamUrl);
+    audio.volume = volume;
     audioRef.current = audio;
     audio.play().catch(() => {});
     return stopExternalAudio;
   }, [externalCurrent?.id, externalCurrent?.streamUrl, isPlaying, stopExternalAudio]);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
 
   useEffect(() => {
     if (!isPlaying || tracks.length === 0) return;
@@ -109,6 +119,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         storage.setItem(IMPORTED_TRACKS_KEY, JSON.stringify(imported)).catch(() => {});
       }
       return [...currentTracks, ...added];
+    });
+  }, []);
+
+  const removeTrack = useCallback((id: string) => {
+    setTracks((currentTracks) => {
+      const nextTracks = currentTracks.filter((track) => track.id !== id);
+      const imported = nextTracks.filter((track) => track.id.startsWith('offline-'));
+      storage.setItem(IMPORTED_TRACKS_KEY, JSON.stringify(imported)).catch(() => {});
+      return nextTracks;
     });
   }, []);
 
@@ -186,11 +205,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [stopExternalAudio]);
 
   const current = dismissed ? null : externalCurrent ?? tracks[index] ?? null;
+  const upNext = externalQueue.length > 1
+    ? externalQueue[(externalIndex + 1) % externalQueue.length]
+    : tracks.length > 1
+      ? tracks[(index + 1) % tracks.length]
+      : null;
 
   const value = useMemo<Ctx>(() => ({
-    tracks, current, index, isPlaying, progress,
-    play, pause, toggle, next, prev, setByTitle, playExternal, addTracks, close,
-  }), [tracks, current, index, isPlaying, progress, play, pause, toggle, next, prev, setByTitle, playExternal, addTracks, close]);
+    tracks, current, upNext, index, isPlaying, progress, volume,
+    play, pause, toggle, next, prev, setByTitle, playExternal, addTracks, removeTrack, close, setVolume,
+  }), [tracks, current, upNext, index, isPlaying, progress, volume, play, pause, toggle, next, prev, setByTitle, playExternal, addTracks, removeTrack, close]);
 
   return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;
 }

@@ -7,6 +7,8 @@ import { RightNavigationMapPanel } from '@/src/components/RightNavigationMapPane
 import { api, VehicleMetrics } from '@/src/api';
 import { useUserLocation } from '@/src/hooks/use-user-location';
 import { CurrentWeather, fetchCurrentWeather } from '@/src/lib/weather';
+import { WeatherWidget } from '@/src/components/WeatherWidget';
+import { ClimateWidget } from '@/src/components/ClimateWidget';
 
 export default function CockpitHome() {
   const [metrics, setMetrics] = useState<VehicleMetrics | null>(null);
@@ -53,8 +55,8 @@ export default function CockpitHome() {
       {!mapExpanded && <>
         <View style={styles.gap} />
         <View style={styles.widgetRail}>
-          <WeatherWidget weather={weather} fallbackTemperature={metrics?.outside_temp ?? 17} />
-          <ClimateWidget temperature={cabinTemp} active={climateOn} onToggle={() => setClimateOn((value) => !value)} onDown={() => setCabinTemp((value) => Math.max(16, value - 1))} onUp={() => setCabinTemp((value) => Math.min(30, value + 1))} />
+          <WeatherWidget compact weather={weather} fallbackTemperature={metrics?.outside_temp ?? 17} />
+          <ClimateWidget compact temperature={cabinTemp} active={climateOn} onToggle={() => setClimateOn((value) => !value)} onDown={() => setCabinTemp((value) => Math.max(16, value - 1))} onUp={() => setCabinTemp((value) => Math.min(30, value + 1))} onTemperatureChange={setCabinTemp} />
           <StatusWidget metrics={metrics} />
         </View>
       </>}
@@ -73,38 +75,6 @@ function ExpandedDriveOverlay({ speed, gear }: { speed: number; gear: string }) 
       <View style={styles.expandedDivider} />
       <Text style={styles.expandedLabel}>GEAR</Text>
       <Text style={styles.expandedGear}>{gear}</Text>
-    </View>
-  );
-}
-
-function WeatherWidget({ weather, fallbackTemperature }: { weather: CurrentWeather | null; fallbackTemperature: number }) {
-  return (
-    <View style={styles.widget} testID="weather-widget">
-      <View style={styles.widgetIcon}><MaterialCommunityIcons name="weather-partly-cloudy" size={24} color={theme.colors.accentCyan} /></View>
-      <View style={styles.widgetCopy}>
-        <Text style={styles.widgetLabel}>OUTSIDE</Text>
-        <Text style={styles.widgetValue}>{Math.round(weather?.temperature ?? fallbackTemperature)}°<Text style={styles.widgetUnit}> C</Text></Text>
-        <Text style={styles.widgetHint}>{weather?.description ?? 'Vehicle sensor fallback'}</Text>
-      </View>
-    </View>
-  );
-}
-
-function ClimateWidget({ temperature, active, onToggle, onDown, onUp }: { temperature: number; active: boolean; onToggle: () => void; onDown: () => void; onUp: () => void }) {
-  return (
-    <View style={styles.widget} testID="climate-widget">
-      <Pressable style={[styles.widgetIcon, active && styles.widgetIconActive]} onPress={onToggle} testID="climate-toggle">
-        <MaterialCommunityIcons name="air-conditioner" size={24} color={active ? theme.colors.brand : theme.colors.onSurfaceSecondary} />
-      </Pressable>
-      <View style={styles.widgetCopy}>
-        <Text style={styles.widgetLabel}>CABIN CLIMATE</Text>
-        <View style={styles.climateValueRow}>
-          <Pressable onPress={onDown} hitSlop={6}><MaterialCommunityIcons name="minus" size={18} color={theme.colors.onSurfaceSecondary} /></Pressable>
-          <Text style={styles.widgetValue}>{temperature}°<Text style={styles.widgetUnit}> C</Text></Text>
-          <Pressable onPress={onUp} hitSlop={6}><MaterialCommunityIcons name="plus" size={18} color={theme.colors.onSurfaceSecondary} /></Pressable>
-        </View>
-        <Text style={[styles.widgetHint, active && { color: theme.colors.success }]}>{active ? 'Cooling on' : 'Climate off'}</Text>
-      </View>
     </View>
   );
 }
@@ -151,7 +121,7 @@ const styles = StyleSheet.create({
   expandedUnit: { fontFamily: theme.font.textBold, fontSize: 10, color: '#AEB8C7' },
   expandedDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.18)', marginVertical: theme.spacing.md },
   expandedGear: { fontFamily: theme.font.display, fontSize: 54, color: theme.colors.brand, lineHeight: 58, marginTop: 2 },
-  widgetRail: { width: 220, gap: theme.spacing.sm },
+  widgetRail: { width: 280, gap: theme.spacing.sm },
   widget: { minHeight: 112, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm, padding: theme.spacing.md, backgroundColor: theme.colors.surfaceRaised, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.border },
   widgetIcon: { width: 42, height: 42, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surfaceTertiary },
   widgetIconActive: { backgroundColor: '#EAF1FF' },
@@ -160,6 +130,5 @@ const styles = StyleSheet.create({
   widgetValue: { fontFamily: theme.font.display, fontSize: 29, color: theme.colors.onSurface, lineHeight: 32 },
   widgetUnit: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary },
   widgetHint: { fontFamily: theme.font.text, fontSize: 10, color: theme.colors.onSurfaceSecondary, marginTop: 2 },
-  climateValueRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   statusValue: { fontFamily: theme.font.displayMedium, fontSize: 21, color: theme.colors.onSurface, marginTop: 4 },
 });
