@@ -5,6 +5,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/src/theme';
 import { PlayerProvider } from '@/src/state/player';
 import { BottomControlBar } from '@/src/components/BottomControlBar';
+import { NowPlayingOverlay } from '@/src/components/NowPlayingOverlay';
 import { ToastProvider, useToast } from '@/src/components/Toast';
 
 function CockpitInner() {
@@ -14,6 +15,7 @@ function CockpitInner() {
       <View style={styles.body}>
         <Slot />
       </View>
+      <NowPlayingOverlay />
       <BottomControlBar showToast={toast.show} />
     </View>
   );

@@ -18,16 +18,16 @@ type Props = {
   origin?: Coord | null;
   destination?: Coord | null;
   route?: Coord[] | null;
+  mapboxToken?: string;
   followUser?: boolean;
+  recenterToken?: number;
   navigating?: boolean;
   mapStyle?: MapStyle;
   testID?: string;
 };
 
-const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN;
-
 function buildHtml(initial: {
-  center: Coord; zoom: number; styleUrl: string; enable3d: boolean;
+  center: Coord; zoom: number; styleUrl: string; enable3d: boolean; token: string;
 }) {
   return `<!DOCTYPE html>
 <html>
@@ -51,12 +51,17 @@ function buildHtml(initial: {
       display:flex; align-items:center; justify-content:center;
     }
     .mb-dest::after { content:''; width:10px; height:10px; border-radius:50%; background:#FFFFFF; }
+    .mb-nav-arrow { width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+      background:#FFFFFF; border:2px solid #2E7CF6; border-radius:50%;
+      box-shadow:0 3px 10px rgba(0,0,0,0.25); }
+    .mb-nav-arrow::before { content:''; width:0; height:0; border-left:8px solid transparent;
+      border-right:8px solid transparent; border-bottom:17px solid #2E7CF6; }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <script>
-    mapboxgl.accessToken = '${MAPBOX_TOKEN}';
+    mapboxgl.accessToken = '${initial.token}';
     const map = new mapboxgl.Map({
       container: 'map',
       style: '${initial.styleUrl}',
@@ -70,6 +75,7 @@ function buildHtml(initial: {
 
     let originMarker = null;
     let destMarker = null;
+    let navMarker = null;
     let hasRouteLayer = false;
 
     function ensure3dTerrain() {
@@ -100,6 +106,14 @@ function buildHtml(initial: {
         const el = document.createElement('div'); el.className = 'mb-dest';
         destMarker = new mapboxgl.Marker({ element: el, offset: [0, -16] }).setLngLat(coord).addTo(map);
       }
+    }
+    function setNavigation(coord, bearing) {
+      if (!coord) { if (navMarker) { navMarker.remove(); navMarker = null; } return; }
+      if (!navMarker) {
+        const el = document.createElement('div'); el.className = 'mb-nav-arrow';
+        navMarker = new mapboxgl.Marker({ element: el, rotationAlignment: 'map' }).setLngLat(coord).addTo(map);
+      } else navMarker.setLngLat(coord);
+      navMarker.setRotation(bearing || 0);
     }
     function setRoute(coords) {
       if (!coords || coords.length < 2) {
@@ -138,6 +152,12 @@ function buildHtml(initial: {
       if (!coord) return;
       map.flyTo({ center: coord, zoom: zoom || 15, duration: 700 });
     }
+    function navigate(coord, nextCoord, zoom) {
+      if (!coord) return;
+      const heading = nextCoord ? (Math.atan2(nextCoord[0] - coord[0], nextCoord[1] - coord[1]) * 180 / Math.PI + 360) % 360 : 0;
+      setNavigation(coord, heading);
+      map.easeTo({ center: coord, zoom: zoom || 16, bearing: heading, pitch: 35, duration: 900, padding: { top: 100, bottom: 220, left: 40, right: 40 } });
+    }
     function setStyle(styleUrl, enable3d) {
       const cur = map.getStyle && map.getStyle();
       map.setStyle(styleUrl);
@@ -163,6 +183,7 @@ function buildHtml(initial: {
         else if (msg.type === 'route') { window.__lastRoute = msg.coords; setRoute(msg.coords); }
         else if (msg.type === 'fit') fitToRoute(msg.coords, msg.padding);
         else if (msg.type === 'flyTo') flyTo(msg.coord, msg.zoom);
+        else if (msg.type === 'navigate') navigate(msg.coord, msg.nextCoord, msg.zoom);
         else if (msg.type === 'setStyle') setStyle(msg.styleUrl, !!msg.enable3d);
       } catch (e) {}
     }
@@ -191,7 +212,7 @@ function buildHtml(initial: {
  */
 export function MapboxMap({
   style, origin, destination, route,
-  followUser = false, navigating = false, mapStyle = 'streets', testID,
+  mapboxToken = '', followUser = false, recenterToken = 0, navigating = false, mapStyle = 'streets', testID,
 }: Props) {
   const initialCenter: Coord = origin ?? [-74.17, 40.735];
   // HTML is only built once; style changes are pushed via postMessage.
@@ -200,7 +221,8 @@ export function MapboxMap({
     zoom: 13,
     styleUrl: STYLE_MAP[mapStyle],
     enable3d: mapStyle === '3d',
-  }), []);
+    token: mapboxToken,
+  }), [mapboxToken]);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const webviewRef = useRef<any>(null);
   const readyRef = useRef(false);
@@ -223,12 +245,26 @@ export function MapboxMap({
     q.forEach(send);
   };
 
+  useEffect(() => {
+    readyRef.current = false;
+    pending.current = [];
+  }, [mapboxToken]);
   useEffect(() => { send({ type: 'origin', coord: origin ?? null }); }, [origin?.[0], origin?.[1]]);
   useEffect(() => { send({ type: 'destination', coord: destination ?? null }); }, [destination?.[0], destination?.[1]]);
   useEffect(() => { send({ type: 'route', coords: route ?? null }); if (route && route.length > 1) send({ type: 'fit', coords: route, padding: navigating ? { top: 90, bottom: 250, left: 40, right: 40 } : undefined }); }, [route?.length, navigating]);
   useEffect(() => {
     if (followUser && origin) send({ type: 'flyTo', coord: origin, zoom: navigating ? 16 : 14 });
   }, [followUser, navigating, origin?.[0], origin?.[1]]);
+  useEffect(() => {
+    if (origin) send({ type: 'flyTo', coord: origin, zoom: navigating ? 16 : 14 });
+  }, [recenterToken]);
+  useEffect(() => {
+    if (navigating && origin && route && route.length > 1) {
+      send({ type: 'navigate', coord: origin, nextCoord: route[1], zoom: 16 });
+    } else {
+      send({ type: 'navigate', coord: null });
+    }
+  }, [navigating, origin?.[0], origin?.[1], route?.[0]?.[0], route?.[0]?.[1], route?.[1]?.[0], route?.[1]?.[1]]);
   useEffect(() => {
     send({ type: 'setStyle', styleUrl: STYLE_MAP[mapStyle], enable3d: mapStyle === '3d' });
   }, [mapStyle]);
@@ -246,7 +282,7 @@ export function MapboxMap({
     return () => window.removeEventListener('message', onMsg);
   }, []);
 
-  if (!MAPBOX_TOKEN) {
+  if (!mapboxToken) {
     return <View style={[styles.wrap, style]} testID={testID} />;
   }
 
@@ -255,6 +291,7 @@ export function MapboxMap({
       <View style={[styles.wrap, style]} testID={testID}>
         {/* @ts-ignore RN Web iframe passthrough */}
         <iframe
+          key={mapboxToken}
           ref={iframeRef as any}
           srcDoc={html}
           style={{ border: 0, width: '100%', height: '100%', display: 'block' }}
@@ -268,6 +305,7 @@ export function MapboxMap({
   return (
     <View style={[styles.wrap, style]} testID={testID}>
       <WebView
+        key={mapboxToken}
         ref={webviewRef}
         originWhitelist={['*']}
         source={{ html }}

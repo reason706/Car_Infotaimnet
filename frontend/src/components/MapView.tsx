@@ -6,6 +6,7 @@ import { theme } from '@/src/theme';
 type Props = {
   width?: number;
   height?: number;
+  vehiclePos?: number;
   variant?: 'dark' | 'light';
   showRoute?: boolean;
   testID?: string;
@@ -20,7 +21,7 @@ const STOPS = (w: number, h: number) => [
   { x: w * 0.72, y: h * 0.34 },
 ];
 
-export function MapView({ width = 900, height = 600, variant = 'light', showRoute = true, testID }: Props) {
+export function MapView({ width = 900, height = 600, vehiclePos, variant = 'light', showRoute = true, testID }: Props) {
   const light = variant === 'light';
   const bg1 = light ? '#F5F6F8' : '#0d1219';
   const bg2 = light ? '#E9ECF0' : '#050608';
@@ -29,7 +30,6 @@ export function MapView({ width = 900, height = 600, variant = 'light', showRout
   const waterColor = light ? '#A8C8E0' : '#0b1830';
   const parkColor = light ? '#CCE1CE' : '#0f2a1a';
   const routeColor = '#2E7CF6';
-  const labelColor = light ? '#4A4F58' : '#8D93A0';
 
   const rows = 7;
   const cols = 9;
@@ -51,6 +51,7 @@ export function MapView({ width = 900, height = 600, variant = 'light', showRout
   ];
 
   const stops = STOPS(width, height);
+  const vehicleStop = vehiclePos === undefined ? stops[0] : { x: stops[0].x, y: height * vehiclePos };
   const routeD = stops.reduce((acc, s, i) => {
     if (i === 0) return `M ${s.x} ${s.y}`;
     const prev = stops[i - 1];
@@ -120,8 +121,8 @@ export function MapView({ width = 900, height = 600, variant = 'light', showRout
             />
 
             {/* Origin marker */}
-            <Circle cx={stops[0].x} cy={stops[0].y} r={9} fill={routeColor} />
-            <Circle cx={stops[0].x} cy={stops[0].y} r={4} fill="#FFFFFF" />
+            <Circle cx={vehicleStop.x} cy={vehicleStop.y} r={9} fill={routeColor} />
+            <Circle cx={vehicleStop.x} cy={vehicleStop.y} r={4} fill="#FFFFFF" />
 
             {/* Destination pin */}
             <Path

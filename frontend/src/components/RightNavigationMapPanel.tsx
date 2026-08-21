@@ -1,15 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, ActivityIndicator, ScrollView, Platform, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { theme } from '@/src/theme';
 import { MapboxMap, MapStyle } from '@/src/components/MapboxMap';
 import { useToast } from '@/src/components/Toast';
 import { useUserLocation } from '@/src/hooks/use-user-location';
-import { geocodeSearch, fetchDirections, formatDistanceKm, formatDurationMin, etaClock, GeocodeFeature, Directions } from '@/src/lib/mapbox';
+import { DEFAULT_MAPBOX_TOKEN, geocodeSearchWithToken, fetchDirectionsWithToken, formatDistanceKm, formatDurationMin, etaClock, GeocodeFeature, Directions } from '@/src/lib/mapbox';
+import { storage } from '@/src/utils/storage';
 
 type Coord = [number, number];
+const MAPBOX_TOKEN_KEY = 'mapbox.public-token';
 
 export function RightNavigationMapPanel({ testID }: { testID?: string }) {
   const toast = useToast();
@@ -24,8 +25,20 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
   const [directions, setDirections] = useState<Directions | null>(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [navigating, setNavigating] = useState(false);
+  const [recenterToken, setRecenterToken] = useState(0);
   const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
   const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [mapboxToken, setMapboxToken] = useState(DEFAULT_MAPBOX_TOKEN);
+  const [tokenDraft, setTokenDraft] = useState(DEFAULT_MAPBOX_TOKEN);
+  const [showTokenSettings, setShowTokenSettings] = useState(false);
+
+  useEffect(() => {
+    storage.getItem(MAPBOX_TOKEN_KEY, DEFAULT_MAPBOX_TOKEN).then((saved) => {
+      const token = typeof saved === 'string' ? saved : DEFAULT_MAPBOX_TOKEN;
+      setMapboxToken(token);
+      setTokenDraft(token);
+    });
+  }, []);
 
   useEffect(() => {
     const iv = setInterval(() => setTime(new Date()), 30_000);
@@ -38,12 +51,12 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
     const t = setTimeout(async () => {
       setSearching(true);
       const proximity: Coord | undefined = loc.coords ? [loc.coords.lng, loc.coords.lat] : undefined;
-      const res = await geocodeSearch(query, proximity);
+      const res = await geocodeSearchWithToken(mapboxToken, query, proximity);
       setFeatures(res);
       setSearching(false);
     }, 350);
     return () => clearTimeout(t);
-  }, [query, loc.coords?.lng, loc.coords?.lat]);
+  }, [query, loc.coords?.lng, loc.coords?.lat, mapboxToken]);
 
   const selectDestination = async (f: GeocodeFeature) => {
     setDestination(f);
@@ -52,7 +65,7 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
     setNavigating(false);
     if (!loc.coords) return;
     setLoadingRoute(true);
-    const dirs = await fetchDirections([loc.coords.lng, loc.coords.lat], f.center);
+    const dirs = await fetchDirectionsWithToken(mapboxToken, [loc.coords.lng, loc.coords.lat], f.center);
     setDirections(dirs);
     setLoadingRoute(false);
     if (!dirs) toast.show('Could not calculate route');
@@ -73,6 +86,11 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
     toast.show('Navigation started');
   };
 
+  const recenterMap = async () => {
+    await loc.refresh();
+    setRecenterToken((token) => token + 1);
+  };
+
   const origin: Coord | null = loc.coords ? [loc.coords.lng, loc.coords.lat] : null;
   const dest: Coord | null = destination?.center ?? null;
   const routeCoords = directions?.geometry.coordinates ?? null;
@@ -86,9 +104,11 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
       <View style={StyleSheet.absoluteFill}>
         <MapboxMap
           origin={origin}
+          mapboxToken={mapboxToken}
           destination={dest}
           route={routeCoords}
           followUser
+          recenterToken={recenterToken}
           navigating={navigating}
           mapStyle={mapStyle}
           testID="mapbox-map"
@@ -181,6 +201,45 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
         setOpen={setShowLayerMenu}
       />
 
+      <View style={styles.tokenSettingsWrap}>
+        <Pressable
+          style={styles.layerBtn}
+          onPress={() => setShowTokenSettings(!showTokenSettings)}
+          testID="btn-mapbox-settings"
+          accessibilityLabel="Mapbox token settings"
+        >
+          <MaterialCommunityIcons name="cog-outline" size={20} color={theme.colors.onSurfaceLight} />
+        </Pressable>
+        {showTokenSettings && (
+          <View style={styles.tokenMenu}>
+            <Text style={styles.tokenTitle}>Mapbox public token</Text>
+            <TextInput
+              value={tokenDraft}
+              onChangeText={setTokenDraft}
+              placeholder="pk.eyJ..."
+              placeholderTextColor="#7A7F88"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.tokenInput}
+              testID="mapbox-token-input"
+            />
+            <Pressable
+              style={styles.tokenSaveBtn}
+              onPress={async () => {
+                const token = tokenDraft.trim();
+                setMapboxToken(token);
+                await storage.setItem(MAPBOX_TOKEN_KEY, token);
+                setShowTokenSettings(false);
+                toast.show(token ? 'Mapbox token updated' : 'Mapbox token cleared');
+              }}
+              testID="btn-save-mapbox-token"
+            >
+              <Text style={styles.tokenSaveText}>Save token</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+
       {/* Location permission banner */}
       {!loc.loading && loc.granted === false && !navigating && (
         <View style={styles.permBanner} testID="location-perm-banner">
@@ -199,7 +258,7 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
       )}
 
       {/* Recenter button */}
-      <Pressable style={styles.recenterBtn} testID="btn-recenter" onPress={loc.refresh}>
+      <Pressable style={styles.recenterBtn} testID="btn-recenter" onPress={recenterMap}>
         <MaterialCommunityIcons name="crosshairs-gps" size={20} color={theme.colors.onSurfaceLight} />
       </Pressable>
 
@@ -405,7 +464,7 @@ const styles = StyleSheet.create({
     flex: 1, color: theme.colors.onSurfaceLight,
     fontFamily: theme.font.text, fontSize: 14,
     // @ts-ignore
-    outlineStyle: 'none',
+    outlineStyle: 'none' as any,
   },
   results: {
     marginTop: theme.spacing.sm, backgroundColor: '#FFFFFF',
@@ -532,6 +591,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end', gap: theme.spacing.sm,
     zIndex: 15,
   },
+  tokenSettingsWrap: {
+    position: 'absolute', right: theme.spacing.md, top: 136,
+    alignItems: 'flex-end', zIndex: 15,
+  },
   layerBtn: {
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center',
@@ -543,6 +606,23 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 4,
     minWidth: 140,
   },
+  tokenMenu: {
+    marginTop: theme.spacing.sm, width: 250,
+    backgroundColor: '#FFFFFF', borderRadius: theme.radius.md, padding: theme.spacing.md,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 4,
+  },
+  tokenTitle: { fontFamily: theme.font.textBold, fontSize: 12, color: theme.colors.onSurfaceLight, marginBottom: theme.spacing.sm },
+  tokenInput: {
+    borderWidth: 1, borderColor: '#D9DDE3', borderRadius: theme.radius.sm,
+    color: theme.colors.onSurfaceLight, fontFamily: theme.font.text, fontSize: 11,
+    paddingHorizontal: theme.spacing.sm, paddingVertical: 8,
+  },
+  tokenSaveBtn: {
+    marginTop: theme.spacing.sm, alignSelf: 'flex-end',
+    backgroundColor: theme.colors.brand, borderRadius: theme.radius.pill,
+    paddingHorizontal: theme.spacing.md, paddingVertical: 7,
+  },
+  tokenSaveText: { fontFamily: theme.font.textBold, fontSize: 11, color: '#FFFFFF' },
   layerOpt: {
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,

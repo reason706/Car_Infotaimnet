@@ -29,6 +29,12 @@ export function BottomControlBar({
   return (
     <View style={styles.bar} testID="bottom-control-bar">
       <IconBtn
+        icon="home-variant"
+        testID="ctrl-home"
+        active={pathname === '/(cockpit)' || pathname === '/'}
+        onPress={() => router.replace('/(cockpit)')}
+      />
+      <IconBtn
         icon="car-outline"
         testID="ctrl-car"
         active={pathname.includes('/dashboard')}

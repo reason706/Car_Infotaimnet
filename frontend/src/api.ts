@@ -6,7 +6,7 @@ async function json<T>(path: string, opts?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-export type Track = { id: string; title: string; artist: string; album: string; duration: number; artwork: string; genre: string };
+export type Track = { id: string; title: string; artist: string; album: string; duration: number; artwork: string; genre: string; streamUrl?: string };
 export type Video = { id: string; title: string; channel: string; duration: number; thumbnail: string; category: string };
 export type Contact = { id: string; name: string; phone: string; avatar?: string; favorite: boolean };
 export type CallLog = { id: string; contact_id?: string; name: string; phone: string; direction: 'incoming' | 'outgoing' | 'missed'; duration: number; timestamp: string };

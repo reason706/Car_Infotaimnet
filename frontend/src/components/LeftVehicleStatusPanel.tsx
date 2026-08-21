@@ -7,11 +7,12 @@ import { theme } from '@/src/theme';
 import { api, VehicleMetrics } from '@/src/api';
 import { useToast } from '@/src/components/Toast';
 
-type Props = { testID?: string };
+type Gear = 'P' | 'R' | 'N' | 'D';
+type Props = { testID?: string; gear?: Gear; onGearChange?: (gear: Gear) => void };
 
-export function LeftVehicleStatusPanel({ testID }: Props) {
+export function LeftVehicleStatusPanel({ testID, gear: controlledGear, onGearChange }: Props) {
   const toast = useToast();
-  const [gear, setGear] = useState<'P' | 'R' | 'N' | 'D'>('P');
+  const [localGear, setLocalGear] = useState<Gear>('P');
   const [lightsOn, setLightsOn] = useState(false);
   const [m, setM] = useState<VehicleMetrics | null>(null);
 
@@ -26,15 +27,27 @@ export function LeftVehicleStatusPanel({ testID }: Props) {
   const fuelKm = m ? Math.round(m.range_km) : 560;
   const fuelPct = m ? Math.round(m.fuel_percent) : 78;
   const ecoPct = 62;
-  const gears: Array<'P' | 'R' | 'N' | 'D'> = ['P', 'R', 'N', 'D'];
+  const gear = controlledGear ?? localGear;
+  const gears: Gear[] = ['P', 'R', 'N', 'D'];
 
   return (
     <View style={styles.root} testID={testID ?? 'left-vehicle-panel'}>
+      <View style={styles.panelHeader}>
+        <View>
+          <Text style={styles.eyebrow}>VEHICLE STATUS</Text>
+          <Text style={styles.panelTitle}>READY TO DRIVE</Text>
+        </View>
+        <View style={styles.livePill}>
+          <View style={styles.liveDot} />
+          <Text style={styles.liveText}>LIVE</Text>
+        </View>
+      </View>
+
       {/* Top row: PRND + light controls */}
       <View style={styles.topRow}>
         <View style={styles.prndRow}>
           {gears.map((g) => (
-            <Pressable key={g} onPress={() => setGear(g)} testID={`prnd-${g}`} hitSlop={6}>
+            <Pressable key={g} style={[styles.gearBtn, gear === g && styles.gearBtnActive]} onPress={() => { setLocalGear(g); onGearChange?.(g); }} testID={`prnd-${g}`} hitSlop={6}>
               <Text style={[styles.prndText, gear === g && styles.prndActive]}>{g}</Text>
             </Pressable>
           ))}
@@ -78,7 +91,9 @@ export function LeftVehicleStatusPanel({ testID }: Props) {
       </View>
 
       {/* Car + neon gauges */}
-      <View style={styles.carRow}>
+      <View style={styles.carStage}>
+        <View style={styles.stageGlow} />
+        <View style={styles.carRow}>
         <NeonGauge
           testID="fuel-gauge"
           icon="gas-station"
@@ -89,7 +104,7 @@ export function LeftVehicleStatusPanel({ testID }: Props) {
 
         <View style={styles.carSlot}>
           <Image
-            source={require('../../assets/images/topdown-car-transparent.png')}
+            source={require('../../assets/images/PngItem_5122003.png')}
             style={styles.carImage}
             contentFit="contain"
             transition={200}
@@ -105,6 +120,7 @@ export function LeftVehicleStatusPanel({ testID }: Props) {
           label="Eco"
           warning
         />
+        </View>
       </View>
 
       {/* Open Trunk */}
@@ -201,11 +217,19 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: theme.radius.xl,
   },
 
+  panelHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing.md },
+  eyebrow: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.accentCyan, letterSpacing: 2 },
+  panelTitle: { fontFamily: theme.font.display, fontSize: 24, color: theme.colors.onSurface, letterSpacing: 1, marginTop: 2 },
+  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: theme.spacing.sm, paddingVertical: 6, borderRadius: theme.radius.pill, backgroundColor: '#143326', borderWidth: 1, borderColor: '#285A42' },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: theme.colors.success },
+  liveText: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.success, letterSpacing: 1 },
   topRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: theme.spacing.sm, minHeight: 28,
   },
-  prndRow: { flexDirection: 'row', gap: theme.spacing.md },
+  prndRow: { flexDirection: 'row', gap: theme.spacing.xs, backgroundColor: theme.colors.surfaceRaised, padding: 4, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.border },
+  gearBtn: { width: 34, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: theme.radius.sm },
+  gearBtnActive: { backgroundColor: theme.colors.brand, shadowColor: theme.colors.brand, shadowOpacity: 0.35, shadowRadius: 8, elevation: 3 },
   prndText: {
     fontFamily: theme.font.textBold,
     fontSize: 15,
@@ -239,12 +263,13 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
+  carStage: { flex: 1, position: 'relative', marginTop: theme.spacing.sm },
+  stageGlow: { position: 'absolute', width: 220, height: 220, borderRadius: 110, alignSelf: 'center', top: '30%', backgroundColor: '#153C65', opacity: 0.18 },
   carRow: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: theme.spacing.sm,
     gap: theme.spacing.md,
   },
   gaugeCol: {
@@ -295,8 +320,8 @@ const styles = StyleSheet.create({
   },
   gaugeLbl: { fontFamily: theme.font.textBold, fontSize: 11, color: theme.colors.onSurface, letterSpacing: 1 },
 
-  carSlot: { flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' },
-  carImage: { width: 220, height: 380 },
+  carSlot: { flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%', zIndex: 1 },
+  carImage: { width: 220, height: 380, opacity: 0.98 },
 
   trunkBtn: {
     alignSelf: 'center',
@@ -306,6 +331,10 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
     backgroundColor: 'transparent',
     borderWidth: 1, borderColor: theme.colors.border,
+    shadowColor: theme.colors.brand,
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    elevation: 3,
   },
   trunkBtnPressed: { backgroundColor: theme.colors.surfaceRaised },
   trunkText: { fontFamily: theme.font.textBold, fontSize: 12, color: theme.colors.onSurface, letterSpacing: 1 },

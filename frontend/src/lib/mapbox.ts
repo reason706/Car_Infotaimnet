@@ -1,4 +1,4 @@
-const TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN;
+export const DEFAULT_MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '';
 
 export type GeocodeFeature = {
   id: string;
@@ -8,9 +8,13 @@ export type GeocodeFeature = {
 };
 
 export async function geocodeSearch(query: string, proximity?: [number, number]): Promise<GeocodeFeature[]> {
-  if (!TOKEN || !query.trim()) return [];
+  return geocodeSearchWithToken(DEFAULT_MAPBOX_TOKEN, query, proximity);
+}
+
+export async function geocodeSearchWithToken(token: string, query: string, proximity?: [number, number]): Promise<GeocodeFeature[]> {
+  if (!token || !query.trim()) return [];
   const params = new URLSearchParams({
-    access_token: TOKEN,
+    access_token: token,
     autocomplete: 'true',
     limit: '6',
     language: 'en',
@@ -36,17 +40,25 @@ export type Directions = {
   duration: number; // seconds
   distance: number; // meters
   geometry: { type: 'LineString'; coordinates: [number, number][] };
-  steps: Array<{ maneuver: { instruction: string }; distance: number; duration: number }>;
+  steps: { maneuver: { instruction: string }; distance: number; duration: number }[];
 };
 
 export async function fetchDirections(
   origin: [number, number],
   destination: [number, number],
 ): Promise<Directions | null> {
-  if (!TOKEN) return null;
+  return fetchDirectionsWithToken(DEFAULT_MAPBOX_TOKEN, origin, destination);
+}
+
+export async function fetchDirectionsWithToken(
+  token: string,
+  origin: [number, number],
+  destination: [number, number],
+): Promise<Directions | null> {
+  if (!token) return null;
   const coords = `${origin[0]},${origin[1]};${destination[0]},${destination[1]}`;
   const params = new URLSearchParams({
-    access_token: TOKEN,
+    access_token: token,
     geometries: 'geojson',
     overview: 'full',
     steps: 'true',

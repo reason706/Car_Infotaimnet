@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, FlatList, ActivityIndicator, Platform } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { WebView } from 'react-native-webview';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
@@ -8,13 +10,63 @@ import { usePlayer } from '@/src/state/player';
 
 const TABS = ['MUSIC', 'VIDEOS'] as const;
 type Tab = typeof TABS[number];
+const SOURCES = ['OFFLINE', 'YOUTUBE MUSIC', 'SPOTIFY', 'RADIOS'] as const;
+type Source = typeof SOURCES[number];
+const RADIO_COUNTRIES = [
+  { label: 'United States', code: 'US' }, { label: 'United Kingdom', code: 'GB' },
+  { label: 'Canada', code: 'CA' }, { label: 'Germany', code: 'DE' },
+  { label: 'India', code: 'IN' }, { label: 'Japan', code: 'JP' },
+];
+type RadioStation = { stationuuid: string; name: string; country: string; favicon: string; url_resolved: string; homepage: string };
 
 export default function MediaScreen() {
   const player = usePlayer();
   const [tab, setTab] = useState<Tab>('MUSIC');
+  const [source, setSource] = useState<Source>('OFFLINE');
   const [videos, setVideos] = useState<Video[]>([]);
+  const [country, setCountry] = useState('US');
+  const [stations, setStations] = useState<RadioStation[]>([]);
+  const [loadingRadios, setLoadingRadios] = useState(false);
+  const [connectedProvider, setConnectedProvider] = useState<'youtube' | 'spotify' | null>(null);
 
   useEffect(() => { api.videos().then(setVideos).catch(() => {}); }, []);
+
+  useEffect(() => {
+    if (source !== 'RADIOS') return;
+    setLoadingRadios(true);
+    fetch(`https://de1.api.radio-browser.info/json/stations/bycountrycodeexact/${country}?limit=24&order=clickcount&reverse=true`)
+      .then((response) => response.ok ? response.json() : [])
+      .then((data: RadioStation[]) => setStations(data.filter((station) => station.url_resolved)))
+      .catch(() => setStations([]))
+      .finally(() => setLoadingRadios(false));
+  }, [country, source]);
+
+  const importOfflineMusic = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'audio/*', multiple: true, copyToCacheDirectory: true,
+    });
+    if (result.canceled) return;
+    const tracks = result.assets.map((asset) => ({
+      id: `offline-${asset.uri}`,
+      title: asset.name.replace(/\.[^/.]+$/, ''),
+      artist: 'Imported offline', album: 'Local library', duration: 240,
+      artwork: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=400&fit=crop&q=80',
+      genre: 'Offline', streamUrl: asset.uri,
+    }));
+    player.addTracks(tracks);
+  };
+
+  const playRadio = async (station: RadioStation) => {
+    const track: Track = {
+      id: `radio-${station.stationuuid}`, title: station.name, artist: station.country,
+      album: 'Live radio', duration: 3600, artwork: station.favicon || 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=400&fit=crop&q=80', genre: 'Radio', streamUrl: station.url_resolved,
+    };
+    const queue = stations.map((item) => ({
+      id: `radio-${item.stationuuid}`, title: item.name, artist: item.country,
+      album: 'Live radio', duration: 3600, artwork: item.favicon || 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=400&fit=crop&q=80', genre: 'Radio', streamUrl: item.url_resolved,
+    }));
+    player.playExternal(track, queue);
+  };
 
   return (
     <View style={styles.root} testID="media-screen">
@@ -35,28 +87,32 @@ export default function MediaScreen() {
       </View>
 
       {tab === 'MUSIC' ? (
-        <FlatList
-          data={player.tracks}
-          keyExtractor={(t) => t.id}
-          numColumns={4}
-          contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 140 }}
-          columnWrapperStyle={{ gap: theme.spacing.md }}
-          ItemSeparatorComponent={() => <View style={{ height: theme.spacing.md }} />}
-          renderItem={({ item }) => (
-            <Pressable
-              style={styles.card}
-              testID={`track-${item.id}`}
-              onPress={() => player.play(item)}
-            >
-              <Image source={{ uri: item.artwork }} style={styles.cardArt} contentFit="cover" transition={200} />
-              <View style={styles.playOverlay}>
-                <MaterialCommunityIcons name="play-circle" size={44} color={theme.colors.brand} />
-              </View>
-              <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
-              <Text style={styles.cardSub} numberOfLines={1}>{item.artist}</Text>
+        <ScrollView contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 140 }}>
+          <View style={styles.sourceRow}>
+            {SOURCES.map((item) => (
+              <Pressable key={item} style={[styles.sourceBtn, source === item && styles.sourceBtnActive]} onPress={() => setSource(item)} testID={`media-source-${item.toLowerCase().replace(/ /g, '-')}`}>
+                <MaterialCommunityIcons name={item === 'OFFLINE' ? 'download-circle-outline' : item === 'RADIOS' ? 'radio' : item === 'SPOTIFY' ? 'spotify' : 'youtube'} size={18} color={source === item ? theme.colors.onBrandPrimary : theme.colors.onSurfaceSecondary} />
+                <Text style={[styles.sourceText, source === item && styles.sourceTextActive]}>{item}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {source === 'OFFLINE' && <>
+            <Pressable style={styles.importBox} onPress={importOfflineMusic} testID="btn-import-offline">
+              <MaterialCommunityIcons name="music-box-outline" size={30} color={theme.colors.brand} />
+              <View style={styles.importCopy}><Text style={styles.importTitle}>Import offline music</Text><Text style={styles.importBody}>Add MP3, M4A, WAV, or other audio files from this device.</Text></View>
+              <MaterialCommunityIcons name="plus" size={24} color={theme.colors.brand} />
             </Pressable>
-          )}
-        />
+            <FlatList
+            data={player.tracks} scrollEnabled={false} keyExtractor={(t) => t.id} numColumns={4}
+            columnWrapperStyle={{ gap: theme.spacing.md }} ItemSeparatorComponent={() => <View style={{ height: theme.spacing.md }} />}
+            renderItem={({ item }) => <TrackCard item={item} onPress={() => item.streamUrl ? player.playExternal(item, [item]) : player.play(item)} />}
+          />
+          </>}
+          {source === 'YOUTUBE MUSIC' && <ProviderPanel provider="youtube" connected={connectedProvider === 'youtube'} onConnect={() => setConnectedProvider('youtube')} />}
+          {source === 'SPOTIFY' && <ProviderPanel provider="spotify" connected={connectedProvider === 'spotify'} onConnect={() => setConnectedProvider('spotify')} />}
+          {source === 'RADIOS' && <RadioPanel country={country} setCountry={setCountry} stations={stations} loading={loadingRadios} onPlay={playRadio} />}
+        </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 140 }}>
           <Text style={styles.section}>PARKED VIEWING</Text>
@@ -77,32 +133,50 @@ export default function MediaScreen() {
         </ScrollView>
       )}
 
-      {/* Persistent Now Playing */}
-      {player.current && (
-        <View style={styles.nowBar} testID="media-now-bar">
-          <Image source={{ uri: player.current.artwork }} style={styles.nowArt} contentFit="cover" />
-          <View style={{ flex: 1, marginLeft: theme.spacing.md }}>
-            <Text style={styles.nowTitle} numberOfLines={1}>{player.current.title}</Text>
-            <Text style={styles.nowArtist} numberOfLines={1}>{player.current.artist} · {player.current.album}</Text>
-            <View style={styles.nowTrack}>
-              <View style={[styles.nowFill, { width: `${player.progress * 100}%` }]} />
-            </View>
-          </View>
-          <View style={styles.nowCtrls}>
-            <Pressable onPress={player.prev} style={styles.nowBtn} testID="now-prev">
-              <MaterialCommunityIcons name="skip-previous" size={28} color={theme.colors.onSurface} />
-            </Pressable>
-            <Pressable onPress={player.toggle} style={[styles.nowBtn, styles.nowBtnPrimary]} testID="now-toggle">
-              <MaterialCommunityIcons name={player.isPlaying ? 'pause' : 'play'} size={32} color={theme.colors.onBrandPrimary} />
-            </Pressable>
-            <Pressable onPress={player.next} style={styles.nowBtn} testID="now-next">
-              <MaterialCommunityIcons name="skip-next" size={28} color={theme.colors.onSurface} />
-            </Pressable>
-          </View>
-        </View>
-      )}
     </View>
   );
+}
+
+function TrackCard({ item, onPress }: { item: Track; onPress: () => void }) {
+  return <Pressable style={styles.card} testID={`track-${item.id}`} onPress={onPress}>
+    <Image source={{ uri: item.artwork }} style={styles.cardArt} contentFit="cover" transition={200} />
+    <View style={styles.playOverlay}><MaterialCommunityIcons name="play-circle" size={44} color={theme.colors.brand} /></View>
+    <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+    <Text style={styles.cardSub} numberOfLines={1}>{item.artist}</Text>
+  </Pressable>;
+}
+
+function ProviderPanel({ provider, connected, onConnect }: { provider: 'youtube' | 'spotify'; connected: boolean; onConnect: () => void }) {
+  const youtube = provider === 'youtube';
+  const icon = youtube ? 'youtube' : 'spotify';
+  const color = youtube ? '#FF3B30' : '#1ED760';
+  const title = youtube ? 'YouTube Music' : 'Spotify';
+  const url = youtube ? 'https://music.youtube.com/' : 'https://open.spotify.com/embed/';
+  return <View style={styles.providerPanel}>
+    <View style={[styles.providerIcon, { backgroundColor: color }]}><MaterialCommunityIcons name={icon} size={34} color="#FFFFFF" /></View>
+    <View style={styles.providerCopy}><Text style={styles.providerTitle}>{title}</Text><Text style={styles.providerBody}>{connected ? 'Connected inside this cockpit session.' : `Sign in with your ${youtube ? 'Google' : 'Spotify'} account to listen here.`}</Text></View>
+    <Pressable style={styles.openProviderBtn} onPress={onConnect} testID={`btn-connect-${provider}`}><Text style={styles.openProviderText}>{connected ? 'RELOAD' : 'SIGN IN'}</Text><MaterialCommunityIcons name="login" size={15} color="#FFFFFF" /></Pressable>
+    {connected && <View style={styles.providerEmbed}>
+      {Platform.OS === 'web' ? <iframe src={url} title={`${title} player`} style={{ width: '100%', height: 360, border: 0 }} /> : <WebView source={{ uri: url }} style={{ flex: 1 }} />}
+    </View>}
+  </View>;
+}
+
+function RadioPanel({ country, setCountry, stations, loading, onPlay }: { country: string; setCountry: (value: string) => void; stations: RadioStation[]; loading: boolean; onPlay: (station: RadioStation) => void }) {
+  return <View>
+    <Text style={styles.section}>LIVE RADIO BY COUNTRY</Text>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.countryRow}>
+      {RADIO_COUNTRIES.map((item) => <Pressable key={item.code} style={[styles.countryBtn, country === item.code && styles.countryBtnActive]} onPress={() => setCountry(item.code)}><Text style={[styles.countryText, country === item.code && styles.countryTextActive]}>{item.label}</Text></Pressable>)}
+    </ScrollView>
+    {loading ? <ActivityIndicator color={theme.colors.brand} style={styles.loader} /> : <View style={styles.radioGrid}>
+      {stations.map((station) => <Pressable key={station.stationuuid} style={styles.radioCard} onPress={() => onPlay(station)} testID={`radio-${station.stationuuid}`}>
+        <View style={styles.radioArt}>{station.favicon ? <Image source={{ uri: station.favicon }} style={styles.radioLogo} contentFit="contain" /> : <MaterialCommunityIcons name="radio" size={30} color={theme.colors.brand} />}</View>
+        <View style={{ flex: 1 }}><Text style={styles.radioName} numberOfLines={1}>{station.name}</Text><Text style={styles.radioMeta} numberOfLines={1}>{station.country}</Text></View>
+        <MaterialCommunityIcons name="play-circle-outline" size={28} color={theme.colors.brand} />
+      </Pressable>)}
+    </View>}
+    {!loading && stations.length === 0 && <Text style={styles.emptyText}>No stations found for this country.</Text>}
+  </View>;
 }
 
 const styles = StyleSheet.create({
@@ -121,6 +195,13 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: theme.colors.brand, borderColor: theme.colors.brand },
   tabText: { fontFamily: theme.font.textBold, fontSize: 12, color: theme.colors.onSurfaceSecondary, letterSpacing: 1.5 },
   tabTextActive: { color: theme.colors.onBrandPrimary },
+  sourceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm, marginBottom: theme.spacing.xl },
+  sourceBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 10 },
+  sourceBtnActive: { backgroundColor: theme.colors.brand, borderColor: theme.colors.brand },
+  sourceText: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.onSurfaceSecondary, letterSpacing: 1 },
+  sourceTextActive: { color: theme.colors.onBrandPrimary },
+  importBox: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, padding: theme.spacing.lg, marginBottom: theme.spacing.xl, borderWidth: 1, borderStyle: 'dashed', borderColor: theme.colors.brand, borderRadius: theme.radius.lg, backgroundColor: theme.colors.brandTertiary },
+  importCopy: { flex: 1 }, importTitle: { fontFamily: theme.font.displayMedium, fontSize: 20, color: theme.colors.onSurface }, importBody: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary, marginTop: 3 },
 
   card: { flex: 1, gap: 4 },
   cardArt: { width: '100%', aspectRatio: 1, borderRadius: theme.radius.md, backgroundColor: theme.colors.surfaceTertiary },
@@ -130,6 +211,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurface, marginTop: 6 },
   cardSub: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary },
+  providerPanel: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, padding: theme.spacing.xl, backgroundColor: theme.colors.surfaceSecondary, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.border },
+  providerIcon: { width: 64, height: 64, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center' },
+  providerCopy: { flex: 1 }, providerTitle: { fontFamily: theme.font.display, fontSize: 25, color: theme.colors.onSurface }, providerBody: { fontFamily: theme.font.text, fontSize: 12, color: theme.colors.onSurfaceSecondary, marginTop: 4 },
+  openProviderBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.brand, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 10 }, openProviderText: { fontFamily: theme.font.textBold, fontSize: 11, color: '#FFFFFF', letterSpacing: 1 },
+  providerEmbed: { width: '100%', height: 360, marginTop: theme.spacing.lg, overflow: 'hidden', borderRadius: theme.radius.md, backgroundColor: '#FFFFFF' },
+  countryRow: { gap: theme.spacing.sm, paddingBottom: theme.spacing.md }, countryBtn: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 9 }, countryBtnActive: { borderColor: theme.colors.brand, backgroundColor: theme.colors.brand }, countryText: { fontFamily: theme.font.textBold, fontSize: 11, color: theme.colors.onSurfaceSecondary }, countryTextActive: { color: '#FFFFFF' },
+  radioGrid: { gap: theme.spacing.sm }, radioCard: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, padding: theme.spacing.sm, backgroundColor: theme.colors.surfaceSecondary, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.border }, radioArt: { width: 52, height: 52, borderRadius: theme.radius.sm, backgroundColor: theme.colors.surfaceTertiary, alignItems: 'center', justifyContent: 'center' }, radioLogo: { width: 42, height: 42 }, radioName: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurface }, radioMeta: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary, marginTop: 2 }, loader: { marginTop: theme.spacing.xl }, emptyText: { fontFamily: theme.font.text, fontSize: 12, color: theme.colors.onSurfaceSecondary, paddingVertical: theme.spacing.xl },
 
   section: { fontFamily: theme.font.textBold, fontSize: 11, letterSpacing: 2, color: theme.colors.onSurfaceSecondary, marginBottom: theme.spacing.md },
   videoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.md },
@@ -144,18 +232,4 @@ const styles = StyleSheet.create({
   videoTitle: { fontFamily: theme.font.displayMedium, fontSize: 15, color: theme.colors.onSurface },
   videoMeta: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary, marginTop: 4 },
 
-  nowBar: {
-    position: 'absolute', left: theme.spacing.md, right: theme.spacing.md, bottom: theme.spacing.md,
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSecondary, borderRadius: theme.radius.lg,
-    borderWidth: 1, borderColor: theme.colors.border, padding: theme.spacing.md,
-  },
-  nowArt: { width: 64, height: 64, borderRadius: theme.radius.md, backgroundColor: theme.colors.surfaceTertiary },
-  nowTitle: { fontFamily: theme.font.displayMedium, fontSize: 20, color: theme.colors.onSurface },
-  nowArtist: { fontFamily: theme.font.text, fontSize: 12, color: theme.colors.onSurfaceSecondary, marginTop: 2 },
-  nowTrack: { marginTop: theme.spacing.sm, height: 3, backgroundColor: theme.colors.border, borderRadius: 2, overflow: 'hidden' },
-  nowFill: { height: '100%', backgroundColor: theme.colors.brand },
-  nowCtrls: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nowBtn: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  nowBtnPrimary: { backgroundColor: theme.colors.brand },
 });
