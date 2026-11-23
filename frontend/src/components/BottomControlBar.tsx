@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@/src/theme';
+import { Icon, IconButton, LevelDots, Text, colors, spacing } from '@/src/ui';
 import { usePlayer } from '@/src/state/player';
 import { VolumeSlider } from '@/src/components/VolumeSlider';
-
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
 export function BottomControlBar({
   onOpenTrunk,
@@ -30,41 +27,23 @@ export function BottomControlBar({
 
   return (
     <View style={styles.bar} testID="bottom-control-bar">
-      <IconBtn
-        icon="home-variant"
-        testID="ctrl-home"
+      <IconButton size="lg" iconSize={26} icon="home-variant" testID="ctrl-home"
         active={pathname === '/(cockpit)' || pathname === '/'}
-        onPress={() => router.replace('/(cockpit)')}
-      />
-      <IconBtn
-        icon="car-outline"
-        testID="ctrl-car"
+        onPress={() => router.replace('/(cockpit)')} />
+      <IconButton size="lg" iconSize={26} icon="car-outline" testID="ctrl-car"
         active={pathname.includes('/dashboard')}
-        onPress={() => router.push('/(cockpit)/dashboard')}
-      />
-      <IconBtn
-        icon="music"
-        testID="ctrl-media"
+        onPress={() => router.push('/(cockpit)/dashboard')} />
+      <IconButton size="lg" iconSize={26} icon="music" testID="ctrl-media"
         active={pathname.includes('/media')}
-        onPress={() => router.push('/(cockpit)/media')}
-      />
-      <IconBtn
-        icon="view-dashboard-outline"
-        testID="ctrl-widgets"
+        onPress={() => router.push('/(cockpit)/media')} />
+      <IconButton size="lg" iconSize={26} icon="view-dashboard-outline" testID="ctrl-widgets"
         active={pathname.includes('/widgets')}
-        onPress={() => router.push('/(cockpit)/widgets')}
-      />
-      <IconBtn
-        icon="package-variant-closed"
-        testID="ctrl-trunk"
-        onPress={() => { onOpenTrunk?.(); notify('Trunk Opening…'); }}
-      />
-      <IconBtn
-        icon="car-defrost-front"
-        testID="ctrl-defrost-front"
+        onPress={() => router.push('/(cockpit)/widgets')} />
+      <IconButton size="lg" iconSize={26} icon="package-variant-closed" testID="ctrl-trunk"
+        onPress={() => { onOpenTrunk?.(); notify('Trunk Opening…'); }} />
+      <IconButton size="lg" iconSize={26} icon="car-defrost-front" testID="ctrl-defrost-front"
         active={defrostFront}
-        onPress={() => setDefrostFront(v => !v)}
-      />
+        onPress={() => setDefrostFront(v => !v)} />
 
       <ClimateCluster
         seatTestID="ctrl-seat-l"
@@ -77,18 +56,10 @@ export function BottomControlBar({
       />
 
       <View style={styles.fanCluster}>
-        <Pressable
-          onPress={() => setFanLevel(f => (f % 5) + 1)}
-          testID="ctrl-fan"
-          hitSlop={4}
-        >
-          <MaterialCommunityIcons name="fan" size={26} color={theme.colors.onSurface} />
+        <Pressable onPress={() => setFanLevel(f => (f % 5) + 1)} testID="ctrl-fan" hitSlop={4}>
+          <Icon name="fan" size={26} />
         </Pressable>
-        <View style={styles.dotsRow}>
-          {[0, 1, 2, 3, 4].map(i => (
-            <View key={i} style={[styles.dot, i < fanLevel && { backgroundColor: theme.colors.brand }]} />
-          ))}
-        </View>
+        <LevelDots count={5} level={fanLevel} color={colors.brand} />
       </View>
 
       <ClimateCluster
@@ -101,27 +72,12 @@ export function BottomControlBar({
         onUp={() => setTempR(Math.min(30, tempR + 1))}
       />
 
-      <IconBtn
-        icon="car-defrost-rear"
-        testID="ctrl-defrost-rear"
+      <IconButton size="lg" iconSize={26} icon="car-defrost-rear" testID="ctrl-defrost-rear"
         active={defrostRear}
-        onPress={() => setDefrostRear(v => !v)}
-      />
+        onPress={() => setDefrostRear(v => !v)} />
 
       <View style={styles.volCluster}><VolumeSlider value={player.volume} onChange={player.setVolume} testID="volume-slider" /></View>
     </View>
-  );
-}
-
-function IconBtn({
-  icon, testID, active, onPress,
-}: {
-  icon: IconName; testID: string; active?: boolean; onPress?: () => void;
-}) {
-  return (
-    <Pressable style={[styles.btn, active && styles.btnActive]} onPress={onPress} testID={testID}>
-      <MaterialCommunityIcons name={icon} size={26} color={active ? theme.colors.brand : theme.colors.onSurface} />
-    </Pressable>
   );
 }
 
@@ -133,24 +89,20 @@ function ClimateCluster({
 }) {
   return (
     <View style={styles.cluster}>
-      <Pressable style={styles.btn} onPress={onSeat} testID={seatTestID}>
-        <MaterialCommunityIcons name="car-seat" size={24} color={seatLevel > 0 ? theme.colors.accentAmber : theme.colors.onSurface} />
-        <View style={styles.dotsRow}>
-          {[0, 1, 2].map(i => (
-            <View key={i} style={[styles.dot, i < seatLevel && { backgroundColor: theme.colors.accentAmber }]} />
-          ))}
-        </View>
-      </Pressable>
+      <IconButton size="lg" icon="car-seat" testID={seatTestID} onPress={onSeat}
+        color={seatLevel > 0 ? 'accentAmber' : 'onSurface'}>
+        <LevelDots count={3} level={seatLevel} color={colors.accentAmber} />
+      </IconButton>
       <View style={styles.tempCol} testID={tempTestID}>
         <Pressable onPress={onUp} hitSlop={6}>
-          <MaterialCommunityIcons name="chevron-up" size={16} color={theme.colors.onSurfaceSecondary} />
+          <Icon name="chevron-up" size="sm" color="onSurfaceSecondary" />
         </Pressable>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-          <Text style={styles.tempVal}>{temp}</Text>
-          <Text style={styles.tempDeg}>°</Text>
+        <View style={styles.tempRow}>
+          <Text variant="title" style={styles.tempVal}>{temp}</Text>
+          <Text variant="title" style={styles.tempDeg}>°</Text>
         </View>
         <Pressable onPress={onDown} hitSlop={6}>
-          <MaterialCommunityIcons name="chevron-down" size={16} color={theme.colors.onSurfaceSecondary} />
+          <Icon name="chevron-down" size="sm" color="onSurfaceSecondary" />
         </Pressable>
       </View>
     </View>
@@ -162,22 +114,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#0A0B0D',
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.sm,
+    backgroundColor: colors.controlBar,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
     height: 82,
   },
-  btn: {
-    width: 60, height: 60, alignItems: 'center', justifyContent: 'center',
-    borderRadius: theme.radius.md, gap: 3,
-  },
-  btnActive: { backgroundColor: theme.colors.brandTertiary },
-  dotsRow: { flexDirection: 'row', gap: 3, marginTop: 2 },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: theme.colors.border },
-  fanCluster: { alignItems: 'center', justifyContent: 'center', gap: 4 },
-  cluster: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  fanCluster: { alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
+  cluster: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxs },
   tempCol: { alignItems: 'center', minWidth: 42 },
-  tempVal: { fontFamily: theme.font.display, fontSize: 22, color: theme.colors.onSurface, lineHeight: 24, letterSpacing: 0.5 },
-  tempDeg: { fontFamily: theme.font.display, fontSize: 14, color: theme.colors.onSurface },
-  volCluster: { width: 190, paddingHorizontal: theme.spacing.sm, height: 44, justifyContent: 'center' },
+  tempRow: { flexDirection: 'row', alignItems: 'baseline' },
+  tempVal: { fontSize: 22, lineHeight: 24, letterSpacing: 0.5 },
+  tempDeg: { fontSize: 14, letterSpacing: 0 },
+  volCluster: { width: 190, paddingHorizontal: spacing.sm, height: 44, justifyContent: 'center' },
 });

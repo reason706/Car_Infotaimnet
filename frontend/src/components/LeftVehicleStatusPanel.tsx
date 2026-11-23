@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import { api, VehicleMetrics } from '@/src/api';
 import { useToast } from '@/src/components/Toast';
+import { Pill, SectionHeader, colors } from '@/src/ui';
 
 type Gear = 'P' | 'R' | 'N' | 'D';
 type Props = { testID?: string; gear?: Gear; onGearChange?: (gear: Gear) => void };
@@ -32,16 +33,11 @@ export function LeftVehicleStatusPanel({ testID, gear: controlledGear, onGearCha
 
   return (
     <View style={styles.root} testID={testID ?? 'left-vehicle-panel'}>
-      <View style={styles.panelHeader}>
-        <View>
-          <Text style={styles.eyebrow}>VEHICLE STATUS</Text>
-          <Text style={styles.panelTitle}>READY TO DRIVE</Text>
-        </View>
-        <View style={styles.livePill}>
-          <View style={styles.liveDot} />
-          <Text style={styles.liveText}>LIVE</Text>
-        </View>
-      </View>
+      <SectionHeader
+        eyebrow="VEHICLE STATUS"
+        title="READY TO DRIVE"
+        right={<Pill label="LIVE" tone="success" dot style={styles.livePill} />}
+      />
 
       {/* Top row: PRND + light controls */}
       <View style={styles.topRow}>
@@ -180,8 +176,8 @@ function NeonGauge({ pct, color, icon, label, warning, testID }: {
             <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
               <Defs>
                 <LinearGradient id={`glow-${color}`} x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0.35" />
-                  <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0" />
+                  <Stop offset="0" stopColor={colors.white} stopOpacity="0.35" />
+                  <Stop offset="0.5" stopColor={colors.white} stopOpacity="0" />
                 </LinearGradient>
               </Defs>
               <Rect x="0" y={`${100 - pct}%`} width="100%" height={`${pct}%`} fill={`url(#glow-${color})`} />
@@ -217,12 +213,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: theme.radius.xl,
   },
 
-  panelHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing.md },
-  eyebrow: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.accentCyan, letterSpacing: 2 },
-  panelTitle: { fontFamily: theme.font.display, fontSize: 24, color: theme.colors.onSurface, letterSpacing: 1, marginTop: 2 },
-  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: theme.spacing.sm, paddingVertical: 6, borderRadius: theme.radius.pill, backgroundColor: '#143326', borderWidth: 1, borderColor: '#285A42' },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: theme.colors.success },
-  liveText: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.success, letterSpacing: 1 },
+  livePill: { paddingHorizontal: theme.spacing.sm },
   topRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: theme.spacing.sm, minHeight: 28,
@@ -233,7 +224,7 @@ const styles = StyleSheet.create({
   prndText: {
     fontFamily: theme.font.textBold,
     fontSize: 15,
-    color: '#4A4E56',
+    color: colors.textDisabled,
     letterSpacing: 2,
   },
   prndActive: { color: theme.colors.onSurface },
@@ -264,7 +255,7 @@ const styles = StyleSheet.create({
   },
 
   carStage: { flex: 1, position: 'relative', marginTop: theme.spacing.sm },
-  stageGlow: { position: 'absolute', width: 220, height: 220, borderRadius: 110, alignSelf: 'center', top: '30%', backgroundColor: '#153C65', opacity: 0.18 },
+  stageGlow: { position: 'absolute', width: 220, height: 220, borderRadius: 110, alignSelf: 'center', top: '30%', backgroundColor: colors.glowBlue, opacity: 0.18 },
   carRow: {
     flex: 1,
     flexDirection: 'row',
@@ -288,7 +279,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: '100%',
     borderRadius: theme.radius.pill,
-    backgroundColor: '#0C0D10',
+    backgroundColor: colors.surfaceSunken,
     borderWidth: 1,
     borderColor: theme.colors.border,
     padding: 1,
@@ -314,7 +305,7 @@ const styles = StyleSheet.create({
       },
       web: {
         // @ts-ignore
-        boxShadow: '0 0 10px rgba(0,212,255,0.55), 0 0 20px rgba(0,212,255,0.35)',
+        boxShadow: `0 0 10px ${colors.cyanGlow}, 0 0 20px ${colors.cyanGlowSoft}`,
       },
     }),
   },

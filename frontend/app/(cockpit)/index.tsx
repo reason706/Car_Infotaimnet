@@ -9,6 +9,7 @@ import { useUserLocation } from '@/src/hooks/use-user-location';
 import { CurrentWeather, fetchCurrentWeather } from '@/src/lib/weather';
 import { WeatherWidget } from '@/src/components/WeatherWidget';
 import { ClimateWidget } from '@/src/components/ClimateWidget';
+import { colors } from '@/src/ui';
 
 export default function CockpitHome() {
   const [metrics, setMetrics] = useState<VehicleMetrics | null>(null);
@@ -113,18 +114,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   mapColumnExpanded: { borderRadius: 0 },
-  mapExpandButton: { position: 'absolute', top: theme.spacing.md, right: theme.spacing.md, width: 46, height: 46, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFFE6', zIndex: 40, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4 },
-  expandedDriveOverlay: { position: 'absolute', left: theme.spacing.xl, top: '22%', width: 142, padding: theme.spacing.lg, borderRadius: theme.radius.lg, backgroundColor: 'rgba(12, 16, 22, 0.72)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)', zIndex: 35 },
-  expandedLabel: { fontFamily: theme.font.textBold, fontSize: 10, color: '#AEB8C7', letterSpacing: 2 },
+  mapExpandButton: { position: 'absolute', top: theme.spacing.md, right: theme.spacing.md, width: 46, height: 46, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white90, zIndex: 40, shadowColor: colors.black, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4 },
+  expandedDriveOverlay: { position: 'absolute', left: theme.spacing.xl, top: '22%', width: 142, padding: theme.spacing.lg, borderRadius: theme.radius.lg, backgroundColor: colors.overlayPanel, borderWidth: 1, borderColor: colors.white18, zIndex: 35 },
+  expandedLabel: { fontFamily: theme.font.textBold, fontSize: 10, color: colors.overlayText, letterSpacing: 2 },
   expandedSpeedRow: { flexDirection: 'row', alignItems: 'baseline', gap: 5, marginTop: 3 },
-  expandedSpeed: { fontFamily: theme.font.display, fontSize: 48, color: '#FFFFFF', lineHeight: 52 },
-  expandedUnit: { fontFamily: theme.font.textBold, fontSize: 10, color: '#AEB8C7' },
-  expandedDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.18)', marginVertical: theme.spacing.md },
+  expandedSpeed: { fontFamily: theme.font.display, fontSize: 48, color: colors.white, lineHeight: 52 },
+  expandedUnit: { fontFamily: theme.font.textBold, fontSize: 10, color: colors.overlayText },
+  expandedDivider: { height: 1, backgroundColor: colors.white18, marginVertical: theme.spacing.md },
   expandedGear: { fontFamily: theme.font.display, fontSize: 54, color: theme.colors.brand, lineHeight: 58, marginTop: 2 },
   widgetRail: { width: 280, gap: theme.spacing.sm },
   widget: { minHeight: 112, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm, padding: theme.spacing.md, backgroundColor: theme.colors.surfaceRaised, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.border },
   widgetIcon: { width: 42, height: 42, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surfaceTertiary },
-  widgetIconActive: { backgroundColor: '#EAF1FF' },
+  widgetIconActive: { backgroundColor: colors.brandSoft },
   widgetCopy: { flex: 1, minWidth: 0 },
   widgetLabel: { fontFamily: theme.font.textBold, fontSize: 9, color: theme.colors.onSurfaceSecondary, letterSpacing: 1.2 },
   widgetValue: { fontFamily: theme.font.display, fontSize: 29, color: theme.colors.onSurface, lineHeight: 32 },

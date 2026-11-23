@@ -9,6 +9,7 @@ import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { useIconFonts } from "@/src/hooks/use-icon-fonts";
+import { colors } from '@/src/ui';
 
 LogBox.ignoreAllLogs(true);
 SplashScreen.preventAutoHideAsync();
@@ -32,7 +33,7 @@ export default function RootLayout() {
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden').catch(() => {});
       NavigationBar.setBehaviorAsync('overlay-swipe').catch(() => {});
-      NavigationBar.setBackgroundColorAsync('#1B1D22').catch(() => {});
+      NavigationBar.setBackgroundColorAsync(colors.surface).catch(() => {});
     }
 
     // Web: request fullscreen on first user gesture
@@ -57,10 +58,10 @@ export default function RootLayout() {
   if ((!iconsLoaded && !iconError) || (!appFontsLoaded && !appFontError)) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#090A0C' }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar hidden translucent />
-      <View style={{ flex: 1, backgroundColor: '#090A0C' }}>
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#090A0C' } }} />
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
       </View>
     </GestureHandlerRootView>
   );

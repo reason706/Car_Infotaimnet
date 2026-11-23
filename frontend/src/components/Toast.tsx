@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { theme } from '@/src/theme';
+import { Card, Text, motion } from '@/src/ui';
 
 type Toast = { id: number; message: string };
 type Ctx = { show: (msg: string) => void };
@@ -16,7 +16,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2400);
+    const t = setTimeout(() => setToast(null), motion.toast);
     return () => clearTimeout(t);
   }, [toast]);
 
@@ -25,15 +25,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       {toast && (
         <Animated.View
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(200)}
+          entering={FadeIn.duration(motion.normal)}
+          exiting={FadeOut.duration(motion.normal)}
           style={styles.wrap}
           pointerEvents="none"
           testID="toast"
         >
-          <View style={styles.card}>
-            <Text style={styles.text}>{toast.message}</Text>
-          </View>
+          <Card variant="raised" radius="pill" padding="md" style={styles.card}>
+            <Text variant="bodyBold" style={styles.text}>{toast.message}</Text>
+          </Card>
         </Animated.View>
       )}
     </ToastCtx.Provider>
@@ -47,19 +47,7 @@ export function useToast() {
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute', top: 24, left: 0, right: 0,
-    alignItems: 'center', zIndex: 1000,
-  },
-  card: {
-    backgroundColor: theme.colors.surfaceRaised,
-    borderRadius: theme.radius.pill,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderWidth: 1, borderColor: theme.colors.border,
-  },
-  text: {
-    fontFamily: theme.font.textBold, fontSize: 13,
-    color: theme.colors.onSurface, letterSpacing: 0.5,
-  },
+  wrap: { position: 'absolute', top: 24, left: 0, right: 0, alignItems: 'center', zIndex: 1000 },
+  card: { paddingHorizontal: 16 },
+  text: { fontSize: 13, letterSpacing: 0.5 },
 });

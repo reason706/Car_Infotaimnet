@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@/src/theme';
 import { CurrentWeather } from '@/src/lib/weather';
+import { colors } from '@/src/ui';
 
 type Props = { weather: CurrentWeather | null; fallbackTemperature: number; compact?: boolean };
 
@@ -24,7 +25,7 @@ export function WeatherWidget({ weather, fallbackTemperature, compact = false }:
   const hourly = weather?.hourly ?? [];
 
   return (
-    <LinearGradient colors={['#3A3897', '#2C2A72', '#1A1A4E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.widget, compact && styles.widgetCompact]} testID={compact ? 'weather-widget-compact' : 'weather-widget'}>
+    <LinearGradient colors={colors.weatherGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.widget, compact && styles.widgetCompact]} testID={compact ? 'weather-widget-compact' : 'weather-widget'}>
       <View style={[styles.content, compact && styles.contentCompact]}>
         <Text style={styles.dateTime}>{now.toLocaleDateString(undefined, { weekday: 'long' })}, {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</Text>
         {compact && <View style={styles.sunRow}>
@@ -102,44 +103,44 @@ function weatherCondition(code: number): string {
 }
 
 const styles = StyleSheet.create({
-  widget: { height: 410, borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', position: 'relative', shadowColor: '#090A0C', shadowOpacity: 0.28, shadowRadius: 16, elevation: 6 },
+  widget: { height: 410, borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: colors.white14, position: 'relative', shadowColor: colors.background, shadowOpacity: 0.28, shadowRadius: 16, elevation: 6 },
   widgetCompact: { height: 318 },
   content: { padding: 16, zIndex: 2 },
   contentCompact: { padding: 14 },
-  dateTime: { fontFamily: theme.font.text, fontSize: 12, color: 'rgba(255,255,255,0.78)', letterSpacing: 0.5 },
-  locationCard: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.24)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', maxWidth: '78%' },
-  locationCardIcon: { fontFamily: theme.font.textBold, fontSize: 15, color: '#FFFFFF' },
-  locationCardText: { flex: 1, fontFamily: theme.font.textBold, fontSize: 10, color: '#FFFFFF' },
+  dateTime: { fontFamily: theme.font.text, fontSize: 12, color: colors.white78, letterSpacing: 0.5 },
+  locationCard: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: colors.black24, borderWidth: 1, borderColor: colors.white10, maxWidth: '78%' },
+  locationCardIcon: { fontFamily: theme.font.textBold, fontSize: 15, color: colors.white },
+  locationCardText: { flex: 1, fontFamily: theme.font.textBold, fontSize: 10, color: colors.white },
   currentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   temperatureGroup: { flexDirection: 'row', alignItems: 'center', flexShrink: 1 },
   currentEmoji: { fontSize: 42, lineHeight: 50 },
-  temperature: { fontFamily: theme.font.display, fontSize: 44, color: '#FFFFFF', lineHeight: 50, flexShrink: 1 },
+  temperature: { fontFamily: theme.font.display, fontSize: 44, color: colors.white, lineHeight: 50, flexShrink: 1 },
   temperatureUnit: { flexDirection: 'row', alignItems: 'flex-start', marginLeft: 3, marginTop: 5 },
-  degree: { fontFamily: theme.font.textBold, fontSize: 11, lineHeight: 13, color: '#D7D9F4' },
-  celsius: { fontFamily: theme.font.textBold, fontSize: 14, lineHeight: 17, color: '#D7D9F4' },
-  currentCondition: { fontFamily: theme.font.displayMedium, fontSize: 15, color: '#F0F2FF', textAlign: 'center', flexShrink: 1 },
-  location: { fontFamily: theme.font.displayMedium, fontSize: 17, color: '#F0F2FF', marginTop: 0, letterSpacing: 0.3 },
-  sunRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, padding: 10, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.26)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  degree: { fontFamily: theme.font.textBold, fontSize: 11, lineHeight: 13, color: colors.weatherTextMuted },
+  celsius: { fontFamily: theme.font.textBold, fontSize: 14, lineHeight: 17, color: colors.weatherTextMuted },
+  currentCondition: { fontFamily: theme.font.displayMedium, fontSize: 15, color: colors.weatherText, textAlign: 'center', flexShrink: 1 },
+  location: { fontFamily: theme.font.displayMedium, fontSize: 17, color: colors.weatherText, marginTop: 0, letterSpacing: 0.3 },
+  sunRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, padding: 10, borderRadius: 16, backgroundColor: colors.black26, borderWidth: 1, borderColor: colors.white08 },
   sunItem: { alignItems: 'center', gap: 1 },
   sunEmoji: { fontSize: 20, lineHeight: 23 },
-  sunText: { fontFamily: theme.font.text, fontSize: 9, color: '#FFFFFF' },
+  sunText: { fontFamily: theme.font.text, fontSize: 9, color: colors.white },
   dayLength: { alignItems: 'center', flex: 1 },
-  sunLabel: { fontFamily: theme.font.textBold, fontSize: 10, color: '#FFFFFF', letterSpacing: 0.5 },
-  sunSub: { fontFamily: theme.font.text, fontSize: 8, color: '#FFFFFF', textAlign: 'center', marginTop: 2 },
-  precipitation: { marginTop: 10, padding: 10, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
-  conditionsTitle: { fontFamily: theme.font.textBold, fontSize: 10, color: '#FFFFFF', letterSpacing: 0.4 },
+  sunLabel: { fontFamily: theme.font.textBold, fontSize: 10, color: colors.white, letterSpacing: 0.5 },
+  sunSub: { fontFamily: theme.font.text, fontSize: 8, color: colors.white, textAlign: 'center', marginTop: 2 },
+  precipitation: { marginTop: 10, padding: 10, borderRadius: 12, backgroundColor: colors.white14, borderWidth: 1, borderColor: colors.white06 },
+  conditionsTitle: { fontFamily: theme.font.textBold, fontSize: 10, color: colors.white, letterSpacing: 0.4 },
   hourlyRow: { gap: 12, paddingTop: 9 },
   hourlyItem: { width: 42, alignItems: 'center', gap: 1 },
-  hourlyTime: { fontFamily: theme.font.textBold, fontSize: 9, color: '#E4E5F8' },
+  hourlyTime: { fontFamily: theme.font.textBold, fontSize: 9, color: colors.weatherTextSoft },
   hourlyEmoji: { fontSize: 17, lineHeight: 21 },
-  hourlyTemp: { fontFamily: theme.font.displayMedium, fontSize: 13, color: '#FFFFFF' },
-  hourlyEmpty: { fontFamily: theme.font.text, fontSize: 9, color: '#D7D9F4', paddingTop: 8 },
+  hourlyTemp: { fontFamily: theme.font.displayMedium, fontSize: 13, color: colors.white },
+  hourlyEmpty: { fontFamily: theme.font.text, fontSize: 9, color: colors.weatherTextMuted, paddingTop: 8 },
   details: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 2 },
-  detailText: { fontFamily: theme.font.text, fontSize: 10, color: '#FFFFFF' },
+  detailText: { fontFamily: theme.font.text, fontSize: 10, color: colors.white },
   forecast: { flexDirection: 'row', gap: 6, marginTop: 12 },
-  forecastDay: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', gap: 1 },
-  forecastName: { fontFamily: theme.font.textBold, fontSize: 9, color: '#E4E5F8' },
+  forecastDay: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 12, backgroundColor: colors.white12, borderWidth: 1, borderColor: colors.white10, gap: 1 },
+  forecastName: { fontFamily: theme.font.textBold, fontSize: 9, color: colors.weatherTextSoft },
   forecastEmoji: { fontSize: 22, lineHeight: 27 },
-  forecastHigh: { fontFamily: theme.font.displayMedium, fontSize: 14, color: '#FFFFFF' },
-  forecastLow: { fontFamily: theme.font.text, fontSize: 10, color: '#C7C9E0' },
+  forecastHigh: { fontFamily: theme.font.displayMedium, fontSize: 14, color: colors.white },
+  forecastLow: { fontFamily: theme.font.text, fontSize: 10, color: colors.weatherTextFaint },
 });

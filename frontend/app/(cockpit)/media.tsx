@@ -9,6 +9,7 @@ import { api, Track, Video } from '@/src/api';
 import { usePlayer } from '@/src/state/player';
 import { MusicPlayerWidget } from '@/src/components/MusicPlayerWidget';
 import { storage } from '@/src/utils/storage';
+import { colors } from '@/src/ui';
 
 const TABS = ['MUSIC', 'VIDEOS'] as const;
 type Tab = typeof TABS[number];
@@ -173,7 +174,7 @@ export default function MediaScreen() {
                 <Text style={styles.heroBody}>Play imported music, live radio, or connect a streaming service.</Text>
               </View>
               <Pressable style={styles.importButton} onPress={importOfflineMusic} testID="btn-import-offline">
-                <MaterialCommunityIcons name="music-note-plus" size={18} color="#FFFFFF" />
+                <MaterialCommunityIcons name="music-note-plus" size={18} color={colors.white} />
                 <Text style={styles.importButtonText}>IMPORT MUSIC</Text>
               </Pressable>
             </View>
@@ -186,7 +187,7 @@ export default function MediaScreen() {
             </View>
             <View style={styles.albumCreator}>
               <TextInput value={albumName} onChangeText={setAlbumName} placeholder="New album name" placeholderTextColor={theme.colors.onSurfaceSecondary} style={styles.albumInput} testID="album-name-input" />
-              <Pressable style={styles.createAlbumButton} onPress={createAlbum} testID="btn-create-album"><MaterialCommunityIcons name="playlist-plus" size={17} color="#FFFFFF" /><Text style={styles.createAlbumText}>CREATE ALBUM</Text></Pressable>
+              <Pressable style={styles.createAlbumButton} onPress={createAlbum} testID="btn-create-album"><MaterialCommunityIcons name="playlist-plus" size={17} color={colors.white} /><Text style={styles.createAlbumText}>CREATE ALBUM</Text></Pressable>
             </View>
             {!selectedAlbum && albumNames.length > 0 && <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.albumNames}>{albumNames.map((name) => <Pressable key={name} style={styles.albumChip} onPress={() => setSelectedAlbum(name)} testID={`album-${name}`}><MaterialCommunityIcons name="album" size={15} color={theme.colors.brandGlow} /><Text style={styles.albumChipText}>{name}</Text><Text style={styles.albumCount}>{localTracks.filter((track) => track.album === name).length}</Text></Pressable>)}</ScrollView>}
             <View style={styles.libraryContent}>
@@ -229,8 +230,8 @@ function TrackCard({ item, onPress, favorite, onFavorite, onRemove }: { item: Tr
   return <Pressable style={styles.card} testID={`track-${item.id}`} onPress={onPress}>
     <Image source={{ uri: item.artwork }} style={styles.cardArt} contentFit="cover" transition={200} />
     <View style={styles.playOverlay}><MaterialCommunityIcons name="play-circle" size={44} color={theme.colors.brand} /></View>
-    {onFavorite && <Pressable style={styles.loveButton} onPress={onFavorite} testID={`love-${item.id}`}><MaterialCommunityIcons name={favorite ? 'heart' : 'heart-outline'} size={18} color={favorite ? theme.colors.accentRed : '#FFFFFF'} /></Pressable>}
-    {onRemove && <Pressable style={styles.removeButton} onPress={() => onRemove(item.id)} testID={`remove-${item.id}`} accessibilityLabel={`Remove ${item.title}`}><MaterialCommunityIcons name="trash-can-outline" size={17} color="#FFFFFF" /></Pressable>}
+    {onFavorite && <Pressable style={styles.loveButton} onPress={onFavorite} testID={`love-${item.id}`}><MaterialCommunityIcons name={favorite ? 'heart' : 'heart-outline'} size={18} color={favorite ? theme.colors.accentRed : colors.white} /></Pressable>}
+    {onRemove && <Pressable style={styles.removeButton} onPress={() => onRemove(item.id)} testID={`remove-${item.id}`} accessibilityLabel={`Remove ${item.title}`}><MaterialCommunityIcons name="trash-can-outline" size={17} color={colors.white} /></Pressable>}
     <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
     <Text style={styles.cardSub} numberOfLines={1}>{item.artist}</Text>
   </Pressable>;
@@ -251,13 +252,13 @@ function AlbumGrid({ tracks, albumNames, onPress }: { tracks: Track[]; albumName
 function ProviderPanel({ provider, connected, onConnect }: { provider: 'youtube' | 'spotify'; connected: boolean; onConnect: () => void }) {
   const youtube = provider === 'youtube';
   const icon = youtube ? 'youtube' : 'spotify';
-  const color = youtube ? '#FF3B30' : '#1ED760';
+  const color = youtube ? colors.youtube : colors.spotify;
   const title = youtube ? 'YouTube Music' : 'Spotify';
   const url = youtube ? 'https://music.youtube.com/' : 'https://open.spotify.com/embed/';
   return <View style={styles.providerPanel}>
-    <View style={[styles.providerIcon, { backgroundColor: color }]}><MaterialCommunityIcons name={icon} size={34} color="#FFFFFF" /></View>
+    <View style={[styles.providerIcon, { backgroundColor: color }]}><MaterialCommunityIcons name={icon} size={34} color={colors.white} /></View>
     <View style={styles.providerCopy}><Text style={styles.providerTitle}>{title}</Text><Text style={styles.providerBody}>{connected ? 'Connected inside this cockpit session.' : `Sign in with your ${youtube ? 'Google' : 'Spotify'} account to listen here.`}</Text></View>
-    <Pressable style={styles.openProviderBtn} onPress={onConnect} testID={`btn-connect-${provider}`}><Text style={styles.openProviderText}>{connected ? 'RELOAD' : 'SIGN IN'}</Text><MaterialCommunityIcons name="login" size={15} color="#FFFFFF" /></Pressable>
+    <Pressable style={styles.openProviderBtn} onPress={onConnect} testID={`btn-connect-${provider}`}><Text style={styles.openProviderText}>{connected ? 'RELOAD' : 'SIGN IN'}</Text><MaterialCommunityIcons name="login" size={15} color={colors.white} /></Pressable>
     {connected && <View style={styles.providerEmbed}>
       {Platform.OS === 'web' ? <iframe src={url} title={`${title} player`} style={{ width: '100%', height: 360, border: 0 }} /> : <WebView source={{ uri: url }} style={{ flex: 1 }} />}
     </View>}
@@ -276,7 +277,7 @@ function RadioPanel({ country, setCountry, countries, countrySearch, setCountryS
       {visibleCountries.length === 0 && <Text style={styles.searchEmpty}>No matching country.</Text>}
     </View> : selectedCountry && <View style={styles.selectedCountry}><MaterialCommunityIcons name="map-marker" size={15} color={theme.colors.brandGlow} /><Text style={styles.selectedCountryText}>{selectedCountry.name}</Text></View>}
     <View style={styles.radioFilterRow}>
-      {(['ALL', 'FAVORITES'] as const).map((item) => <Pressable key={item} style={[styles.radioFilter, filter === item && styles.radioFilterActive]} onPress={() => setFilter(item)}><MaterialCommunityIcons name={item === 'ALL' ? 'radio-tower' : 'heart'} size={14} color={filter === item ? '#FFFFFF' : theme.colors.onSurfaceSecondary} /><Text style={[styles.radioFilterText, filter === item && styles.radioFilterTextActive]}>{item}</Text></Pressable>)}
+      {(['ALL', 'FAVORITES'] as const).map((item) => <Pressable key={item} style={[styles.radioFilter, filter === item && styles.radioFilterActive]} onPress={() => setFilter(item)}><MaterialCommunityIcons name={item === 'ALL' ? 'radio-tower' : 'heart'} size={14} color={filter === item ? colors.white : theme.colors.onSurfaceSecondary} /><Text style={[styles.radioFilterText, filter === item && styles.radioFilterTextActive]}>{item}</Text></Pressable>)}
     </View>
     {loading ? <ActivityIndicator color={theme.colors.brand} style={styles.loader} /> : <View style={styles.radioGrid}>
       {visibleStations.map((station) => <Pressable key={station.stationuuid} style={styles.radioCard} onPress={() => onPlay(station)} testID={`radio-${station.stationuuid}`}>
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
   heroTitle: { fontFamily: theme.font.display, fontSize: 28, color: theme.colors.onSurface, letterSpacing: 1.5, marginTop: 4 },
   heroBody: { fontFamily: theme.font.text, fontSize: 12, color: theme.colors.onSurfaceSecondary, marginTop: 5 },
   importButton: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.brand, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 11 },
-  importButtonText: { fontFamily: theme.font.textBold, fontSize: 10, color: '#FFFFFF', letterSpacing: 1 },
+  importButtonText: { fontFamily: theme.font.textBold, fontSize: 10, color: colors.white, letterSpacing: 1 },
   mediaColumns: { flex: 1, minHeight: 0, flexDirection: 'row', alignItems: 'stretch', gap: theme.spacing.xl },
   musicArea: { flex: 1, padding: theme.spacing.md, paddingBottom: 0 },
   libraryScroll: { flex: 1, minWidth: 0 },
@@ -338,28 +339,28 @@ const styles = StyleSheet.create({
   cardArt: { width: 150, height: 150, borderRadius: theme.radius.md, backgroundColor: theme.colors.surfaceTertiary },
   playOverlay: {
     position: 'absolute', bottom: 44, right: 6,
-    backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 22,
+    backgroundColor: colors.scrim, borderRadius: 22,
   },
   cardTitle: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurface, marginTop: 6 },
   cardSub: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary },
-  loveButton: { position: 'absolute', top: 8, right: 8, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.58)' },
+  loveButton: { position: 'absolute', top: 8, right: 8, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.scrimStrong },
   albumCreator: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm, marginBottom: theme.spacing.md },
   albumInput: { flex: 1, minHeight: 42, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.md, color: theme.colors.onSurface, fontFamily: theme.font.text, fontSize: 12, backgroundColor: theme.colors.surfaceSecondary },
   createAlbumButton: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 42, borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.md, backgroundColor: theme.colors.brand },
-  createAlbumText: { fontFamily: theme.font.textBold, fontSize: 10, color: '#FFFFFF', letterSpacing: 0.8 },
+  createAlbumText: { fontFamily: theme.font.textBold, fontSize: 10, color: colors.white, letterSpacing: 0.8 },
   albumNames: { gap: theme.spacing.sm, paddingBottom: theme.spacing.md },
   albumChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 8 },
   albumCount: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.onSurfaceSecondary },
   albumCard: { width: 190, gap: 4 },
   albumArt: { width: 190, height: 190, borderRadius: theme.radius.md, backgroundColor: theme.colors.surfaceTertiary },
-  removeButton: { position: 'absolute', top: 8, left: 8, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.58)' },
+  removeButton: { position: 'absolute', top: 8, left: 8, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.scrimStrong },
   albumChipText: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceTertiary },
   providerPanel: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, padding: theme.spacing.xl, backgroundColor: theme.colors.surfaceSecondary, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.border },
   providerIcon: { width: 64, height: 64, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center' },
   providerCopy: { flex: 1 }, providerTitle: { fontFamily: theme.font.display, fontSize: 25, color: theme.colors.onSurface }, providerBody: { fontFamily: theme.font.text, fontSize: 12, color: theme.colors.onSurfaceSecondary, marginTop: 4 },
-  openProviderBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.brand, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 10 }, openProviderText: { fontFamily: theme.font.textBold, fontSize: 11, color: '#FFFFFF', letterSpacing: 1 },
-  providerEmbed: { width: '100%', height: 360, marginTop: theme.spacing.lg, overflow: 'hidden', borderRadius: theme.radius.md, backgroundColor: '#FFFFFF' },
-  countryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm, paddingBottom: theme.spacing.md }, countryBtn: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 9 }, countryBtnActive: { borderColor: theme.colors.brand, backgroundColor: theme.colors.brand }, countryText: { fontFamily: theme.font.textBold, fontSize: 11, color: theme.colors.onSurfaceSecondary }, countryTextActive: { color: '#FFFFFF' },
+  openProviderBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.brand, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 10 }, openProviderText: { fontFamily: theme.font.textBold, fontSize: 11, color: colors.white, letterSpacing: 1 },
+  providerEmbed: { width: '100%', height: 360, marginTop: theme.spacing.lg, overflow: 'hidden', borderRadius: theme.radius.md, backgroundColor: colors.white },
+  countryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm, paddingBottom: theme.spacing.md }, countryBtn: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 9 }, countryBtnActive: { borderColor: theme.colors.brand, backgroundColor: theme.colors.brand }, countryText: { fontFamily: theme.font.textBold, fontSize: 11, color: theme.colors.onSurfaceSecondary }, countryTextActive: { color: colors.white },
   radioGrid: { gap: theme.spacing.sm }, radioCard: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, padding: theme.spacing.sm, backgroundColor: theme.colors.surfaceSecondary, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.border }, radioArt: { width: 52, height: 52, borderRadius: theme.radius.sm, backgroundColor: theme.colors.surfaceTertiary, alignItems: 'center', justifyContent: 'center' }, radioLogo: { width: 42, height: 42 }, radioName: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurface }, radioMeta: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary, marginTop: 2 }, loader: { marginTop: theme.spacing.xl }, emptyText: { fontFamily: theme.font.text, fontSize: 12, color: theme.colors.onSurfaceSecondary, paddingVertical: theme.spacing.xl },
 
   section: { fontFamily: theme.font.textBold, fontSize: 11, letterSpacing: 2, color: theme.colors.onSurfaceSecondary, marginBottom: theme.spacing.md },
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
   radioFilter: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 8 },
   radioFilterActive: { backgroundColor: theme.colors.brand, borderColor: theme.colors.brand },
   radioFilterText: { fontFamily: theme.font.textBold, fontSize: 10, color: theme.colors.onSurfaceSecondary, letterSpacing: 0.8 },
-  radioFilterTextActive: { color: '#FFFFFF' },
+  radioFilterTextActive: { color: colors.white },
   selectedCountry: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderColor: theme.colors.brand, borderRadius: theme.radius.pill, paddingHorizontal: theme.spacing.md, paddingVertical: 8, marginBottom: theme.spacing.md },
   selectedCountryText: { fontFamily: theme.font.textBold, fontSize: 11, color: theme.colors.brandGlow },
   searchEmpty: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceSecondary, paddingVertical: 8 },

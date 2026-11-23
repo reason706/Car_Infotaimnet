@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+import { mapColors } from '@/src/ui';
 
 type Coord = [number, number];
 
@@ -37,25 +38,25 @@ function buildHtml(initial: {
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
   <style>
-    html, body, #map { margin:0; padding:0; height:100%; width:100%; background:#F3F5F8; }
+    html, body, #map { margin:0; padding:0; height:100%; width:100%; background:${mapColors.canvas}; }
     body { overflow:hidden; }
     .mb-origin { width:16px; height:16px; border-radius:50%;
-      background:#2E7CF6; border:3px solid #FFFFFF;
-      box-shadow: 0 0 0 4px rgba(46,124,246,0.2);
+      background:${mapColors.route}; border:3px solid ${mapColors.marker};
+      box-shadow: 0 0 0 4px ${mapColors.routeHalo};
     }
     .mb-dest {
       width:32px; height:32px; border-radius:50% 50% 50% 0;
-      background:#2E7CF6; border:3px solid #FFFFFF;
+      background:${mapColors.route}; border:3px solid ${mapColors.marker};
       transform: rotate(-45deg);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 10px ${mapColors.markerShadow};
       display:flex; align-items:center; justify-content:center;
     }
-    .mb-dest::after { content:''; width:10px; height:10px; border-radius:50%; background:#FFFFFF; }
+    .mb-dest::after { content:''; width:10px; height:10px; border-radius:50%; background:${mapColors.marker}; }
     .mb-nav-arrow { width:34px; height:34px; display:flex; align-items:center; justify-content:center;
-      background:#FFFFFF; border:2px solid #2E7CF6; border-radius:50%;
-      box-shadow:0 3px 10px rgba(0,0,0,0.25); }
+      background:${mapColors.marker}; border:2px solid ${mapColors.route}; border-radius:50%;
+      box-shadow:0 3px 10px ${mapColors.markerShadow}; }
     .mb-nav-arrow::before { content:''; width:0; height:0; border-left:8px solid transparent;
-      border-right:8px solid transparent; border-bottom:17px solid #2E7CF6; }
+      border-right:8px solid transparent; border-bottom:17px solid ${mapColors.route}; }
   </style>
 </head>
 <body>
@@ -133,12 +134,12 @@ function buildHtml(initial: {
         map.addLayer({
           id: 'route-glow', type: 'line', source: 'route',
           layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': '#2E7CF6', 'line-width': 12, 'line-opacity': 0.22 }
+          paint: { 'line-color': '${mapColors.route}', 'line-width': 12, 'line-opacity': 0.22 }
         });
         map.addLayer({
           id: 'route-line', type: 'line', source: 'route',
           layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': '#2E7CF6', 'line-width': 6 }
+          paint: { 'line-color': '${mapColors.route}', 'line-width': 6 }
         });
         hasRouteLayer = true;
       }
@@ -326,5 +327,5 @@ export function MapboxMap({
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, overflow: 'hidden', backgroundColor: '#E4E7EB' },
+  wrap: { flex: 1, overflow: 'hidden', backgroundColor: mapColors.placeholder },
 });

@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { theme } from '@/src/theme';
 import { api, Contact, CallLog } from '@/src/api';
+import { colors } from '@/src/ui';
 
 const DIAL_KEYS = [
   ['1', ''], ['2', 'ABC'], ['3', 'DEF'],
@@ -146,7 +147,7 @@ export default function ContactsScreen() {
               <CallActBtn icon="keyboard" label="KEYPAD" />
             </View>
             <Pressable style={styles.endCallBtn} onPress={endCall} testID="end-call-btn">
-              <MaterialCommunityIcons name="phone-hangup" size={30} color="#FFFFFF" />
+              <MaterialCommunityIcons name="phone-hangup" size={30} color={colors.white} />
               <Text style={styles.endCallText}>END CALL</Text>
             </Pressable>
           </View>
@@ -286,5 +287,5 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.error, paddingHorizontal: theme.spacing.xxl, paddingVertical: theme.spacing.md,
     borderRadius: theme.radius.pill, alignItems: 'center',
   },
-  endCallText: { fontFamily: theme.font.textBold, fontSize: 14, color: '#FFFFFF', letterSpacing: 2 },
+  endCallText: { fontFamily: theme.font.textBold, fontSize: 14, color: colors.white, letterSpacing: 2 },
 });

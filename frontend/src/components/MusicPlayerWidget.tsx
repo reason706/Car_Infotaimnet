@@ -1,8 +1,7 @@
 import React from 'react';
-import { Animated, PanResponder, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, PanResponder, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@/src/theme';
+import { Icon, IconButton, ProgressBar, Text, colors, radius, shadows, spacing } from '@/src/ui';
 import { usePlayer } from '@/src/state/player';
 
 export function MusicPlayerWidget({ movable = false, compact = false, vertical = false }: { movable?: boolean; compact?: boolean; vertical?: boolean }) {
@@ -55,38 +54,29 @@ export function MusicPlayerWidget({ movable = false, compact = false, vertical =
         <View style={[styles.topRow, vertical && styles.topRowVertical]}>
           <View style={styles.trackCopy}>
             <View style={styles.titleRow}>
-              <Text style={styles.title} numberOfLines={1}>{track?.title ?? 'No track selected'}</Text>
-              <MaterialCommunityIcons name="bluetooth" size={15} color={theme.colors.brandGlow} />
+              <Text variant="title" style={styles.title} numberOfLines={1}>{track?.title ?? 'No track selected'}</Text>
+              <Icon name="bluetooth" size={15} color="brandGlow" />
             </View>
-            <Text style={styles.artist} numberOfLines={1}>{track ? `${track.artist} · ${track.album}` : 'Choose music from Media Hub'}</Text>
+            <Text variant="body" color="textMuted" style={styles.artist} numberOfLines={1}>{track ? `${track.artist} · ${track.album}` : 'Choose music from Media Hub'}</Text>
           </View>
           <View style={[styles.controls, vertical && styles.controlsVertical]}>
-            <Pressable onPress={() => setRepeat((value) => !value)} testID="music-repeat" accessibilityLabel="Toggle repeat">
-              <MaterialCommunityIcons name="repeat" size={18} color={repeat ? theme.colors.brandGlow : theme.colors.onSurfaceSecondary} />
-            </Pressable>
-            <Pressable onPress={player.prev} testID="music-previous" accessibilityLabel="Previous track">
-              <MaterialCommunityIcons name="skip-previous" size={28} color={theme.colors.onSurface} />
-            </Pressable>
-            <Pressable style={styles.playButton} onPress={player.toggle} testID="music-play-toggle" accessibilityLabel={player.isPlaying ? 'Pause music' : 'Play music'}>
-              <MaterialCommunityIcons name={player.isPlaying ? 'pause' : 'play'} size={22} color={theme.colors.surface} />
-            </Pressable>
-            <Pressable onPress={player.next} testID="music-next" accessibilityLabel="Next track">
-              <MaterialCommunityIcons name="skip-next" size={28} color={theme.colors.onSurface} />
-            </Pressable>
-            <Pressable onPress={() => setShuffle((value) => !value)} testID="music-shuffle" accessibilityLabel="Toggle shuffle">
-              <MaterialCommunityIcons name="shuffle" size={18} color={shuffle ? theme.colors.brandGlow : theme.colors.onSurfaceSecondary} />
-            </Pressable>
+            <IconButton size="sm" iconSize={18} icon="repeat" color="onSurfaceSecondary" active={repeat} activeColor="brandGlow" style={styles.plainActive}
+              onPress={() => setRepeat((value) => !value)} testID="music-repeat" accessibilityLabel="Toggle repeat" />
+            <IconButton size="sm" iconSize="xl" icon="skip-previous" onPress={player.prev} testID="music-previous" accessibilityLabel="Previous track" />
+            <IconButton size="md" iconSize={22} round variant="inverse" icon={player.isPlaying ? 'pause' : 'play'} style={styles.playButton}
+              onPress={player.toggle} testID="music-play-toggle" accessibilityLabel={player.isPlaying ? 'Pause music' : 'Play music'} />
+            <IconButton size="sm" iconSize="xl" icon="skip-next" onPress={player.next} testID="music-next" accessibilityLabel="Next track" />
+            <IconButton size="sm" iconSize={18} icon="shuffle" color="onSurfaceSecondary" active={shuffle} activeColor="brandGlow" style={styles.plainActive}
+              onPress={() => setShuffle((value) => !value)} testID="music-shuffle" accessibilityLabel="Toggle shuffle" />
           </View>
         </View>
 
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${player.progress * 100}%` }]} />
-        </View>
+        <ProgressBar value={player.progress} color={colors.accent} style={styles.progress} />
 
         <View style={styles.bottomRow}>
           <View style={styles.nextCopy}>
-            <Text style={styles.upNext}>UP NEXT</Text>
-            <Text style={styles.nextTrack} numberOfLines={1}>{player.upNext?.title ?? 'Your queue is empty'}</Text>
+            <Text variant="micro" color="textFaint">UP NEXT</Text>
+            <Text variant="bodyBold" color="textSoft" style={styles.nextTrack} numberOfLines={1}>{player.upNext?.title ?? 'Your queue is empty'}</Text>
           </View>
         </View>
       </View>
@@ -95,32 +85,31 @@ export function MusicPlayerWidget({ movable = false, compact = false, vertical =
 }
 
 const styles = StyleSheet.create({
-  widget: { width: '100%', minHeight: 190, flexDirection: 'row', overflow: 'hidden', backgroundColor: '#2C313C', borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  widget: { width: '100%', minHeight: 190, flexDirection: 'row', overflow: 'hidden', backgroundColor: colors.surfaceCard, borderRadius: 22, borderWidth: 1, borderColor: colors.white08 },
   widgetCompact: { minHeight: 132 },
   widgetVertical: { width: 300, minHeight: 0, flexDirection: 'column' },
-  widgetOverlay: { position: 'absolute', top: 18, right: 18, zIndex: 50, elevation: 12, shadowColor: '#000000', shadowOpacity: 0.35, shadowRadius: 16 },
-  widgetDragging: { borderColor: '#F39A4A', shadowOpacity: 0.6 },
+  widgetOverlay: { position: 'absolute', top: 18, right: 18, zIndex: 50, ...shadows.lg },
+  widgetDragging: { borderColor: colors.accent, shadowOpacity: 0.6 },
   dragHandleWrap: { position: 'absolute', top: 0, left: 0, right: 0, height: 30, zIndex: 5, alignItems: 'center', justifyContent: 'flex-start' },
-  dragHandle: { width: 92, height: 6, borderRadius: 3, backgroundColor: '#FFFFFF', opacity: 0.7 },
-  dragHandleActive: { opacity: 1, backgroundColor: '#F39A4A' },
-  artwork: { width: 150, minHeight: 190, backgroundColor: theme.colors.surfaceTertiary },
+  dragHandle: { width: 92, height: 6, borderRadius: radius.xs, backgroundColor: colors.white, opacity: 0.7 },
+  dragHandleActive: { opacity: 1, backgroundColor: colors.accent },
+  artwork: { width: 150, minHeight: 190, backgroundColor: colors.surfaceTertiary },
   artworkCompact: { width: 96, minHeight: 132 },
   artworkVertical: { width: '100%', height: 220, minHeight: 0 },
   content: { flex: 1, justifyContent: 'space-between', padding: 18, paddingTop: 22, minWidth: 0 },
-  contentVertical: { width: '100%', padding: 16, paddingTop: 16, gap: 18 },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  contentVertical: { width: '100%', padding: spacing.lg, paddingTop: spacing.lg, gap: 18 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   topRowVertical: { flexDirection: 'column', alignItems: 'stretch', gap: 14 },
   trackCopy: { flex: 1, minWidth: 0 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  title: { flexShrink: 1, fontFamily: theme.font.display, fontSize: 23, color: '#FFFFFF' },
-  artist: { fontFamily: theme.font.text, fontSize: 12, color: '#A8ADB8', marginTop: 3 },
-  controls: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  title: { flexShrink: 1, fontSize: 23, letterSpacing: 0 },
+  artist: { marginTop: 3 },
+  controls: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxs },
   controlsVertical: { justifyContent: 'space-between', width: '100%', gap: 0 },
-  playButton: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
-  progressTrack: { height: 5, borderRadius: 3, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.12)', marginTop: 12 },
-  progressFill: { height: '100%', backgroundColor: '#F39A4A' },
-  bottomRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginTop: 14 },
+  plainActive: { backgroundColor: colors.transparent },
+  playButton: { width: 42, height: 42, borderRadius: 21 },
+  progress: { marginTop: spacing.md },
+  bottomRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: spacing.md, marginTop: 14 },
   nextCopy: { flex: 1, minWidth: 0 },
-  upNext: { fontFamily: theme.font.textBold, fontSize: 9, color: '#767D8B', letterSpacing: 1.5 },
-  nextTrack: { fontFamily: theme.font.textBold, fontSize: 11, color: '#D6D9DF', marginTop: 4 },
+  nextTrack: { fontSize: 11, marginTop: spacing.xs },
 });

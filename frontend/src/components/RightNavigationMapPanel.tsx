@@ -8,6 +8,7 @@ import { useToast } from '@/src/components/Toast';
 import { useUserLocation } from '@/src/hooks/use-user-location';
 import { DEFAULT_MAPBOX_TOKEN, geocodeSearchWithToken, fetchDirectionsWithToken, formatDistanceKm, formatDurationMin, etaClock, GeocodeFeature, Directions } from '@/src/lib/mapbox';
 import { storage } from '@/src/utils/storage';
+import { colors } from '@/src/ui';
 
 type Coord = [number, number];
 const MAPBOX_TOKEN_KEY = 'mapbox.public-token';
@@ -129,7 +130,7 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
               value={query}
               onChangeText={(t) => { setQuery(t); setShowResults(true); }}
               placeholder="Search destination"
-              placeholderTextColor="#7A7F88"
+              placeholderTextColor={colors.onLightMuted}
               onFocus={() => setShowResults(true)}
               style={styles.searchInput}
               testID="dest-search-input"
@@ -138,7 +139,7 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
             {searching && <ActivityIndicator size="small" color={theme.colors.brand} />}
             {query.length > 0 && !searching && (
               <Pressable onPress={() => { setQuery(''); setFeatures([]); clearRoute(); }} hitSlop={6} testID="dest-search-clear">
-                <MaterialCommunityIcons name="close-circle" size={16} color="#7A7F88" />
+                <MaterialCommunityIcons name="close-circle" size={16} color={colors.onLightMuted} />
               </Pressable>
             )}
           </View>
@@ -217,7 +218,7 @@ export function RightNavigationMapPanel({ testID }: { testID?: string }) {
               value={tokenDraft}
               onChangeText={setTokenDraft}
               placeholder="pk.eyJ..."
-              placeholderTextColor="#7A7F88"
+              placeholderTextColor={colors.onLightMuted}
               autoCapitalize="none"
               autoCorrect={false}
               style={styles.tokenInput}
@@ -331,7 +332,7 @@ function RouteOverviewCard({
               <>
                 <View style={styles.timelineFill} />
                 <View style={styles.timelineWarn}>
-                  <MaterialCommunityIcons name="alert" size={10} color="#fff" />
+                  <MaterialCommunityIcons name="alert" size={10} color={colors.white} />
                 </View>
               </>
             )}
@@ -357,7 +358,7 @@ function RouteOverviewCard({
       <View style={styles.ctaCol}>
         {loading ? (
           <View style={styles.goBtnLoading} testID="btn-go-loading">
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           </View>
         ) : (
           <Pressable
@@ -366,7 +367,7 @@ function RouteOverviewCard({
             onPress={onGo}
             disabled={!directions}
           >
-            <MaterialCommunityIcons name={navigating ? 'navigation' : 'play'} size={16} color="#FFFFFF" />
+            <MaterialCommunityIcons name={navigating ? 'navigation' : 'play'} size={16} color={colors.white} />
             <Text style={styles.goText}>{navigating ? 'NAVIGATING' : 'GO'}</Text>
           </Pressable>
         )}
@@ -450,15 +451,15 @@ const styles = StyleSheet.create({
   },
   lockPill: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#FFFFFFE6', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 2,
+    backgroundColor: colors.white90, alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 2,
   },
   searchWrap: { flex: 1 },
   searchBox: {
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
-    backgroundColor: '#FFFFFFEE', borderRadius: theme.radius.pill,
+    backgroundColor: colors.white93, borderRadius: theme.radius.pill,
     paddingHorizontal: theme.spacing.md, paddingVertical: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 2,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 2,
   },
   searchInput: {
     flex: 1, color: theme.colors.onSurfaceLight,
@@ -467,29 +468,29 @@ const styles = StyleSheet.create({
     outlineStyle: 'none' as any,
   },
   results: {
-    marginTop: theme.spacing.sm, backgroundColor: '#FFFFFF',
+    marginTop: theme.spacing.sm, backgroundColor: colors.lightCard,
     borderRadius: theme.radius.md,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.16, shadowRadius: 14, elevation: 6,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.16, shadowRadius: 14, elevation: 6,
     overflow: 'hidden',
   },
   resultRow: {
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: '#EEF0F2',
+    borderBottomWidth: 1, borderBottomColor: colors.lightDividerSoft,
   },
   resultTitle: { fontFamily: theme.font.textBold, fontSize: 13, color: theme.colors.onSurfaceLight },
-  resultSub: { fontFamily: theme.font.text, fontSize: 11, color: '#7A7F88', marginTop: 1 },
+  resultSub: { fontFamily: theme.font.text, fontSize: 11, color: colors.onLightMuted, marginTop: 1 },
 
   rightGroup: { flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' },
   timePill: {
-    backgroundColor: '#FFFFFFCC', paddingHorizontal: theme.spacing.md, paddingVertical: 8,
+    backgroundColor: colors.white80, paddingHorizontal: theme.spacing.md, paddingVertical: 8,
     borderRadius: theme.radius.pill,
   },
   timeText: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurfaceLight, letterSpacing: 0.5 },
   timeAmpm: { fontFamily: theme.font.text, fontSize: 11, color: theme.colors.onSurfaceLight },
   badgePill: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#FFFFFFCC', paddingHorizontal: theme.spacing.md, paddingVertical: 8,
+    backgroundColor: colors.white80, paddingHorizontal: theme.spacing.md, paddingVertical: 8,
     borderRadius: theme.radius.pill,
   },
   badgeText: { fontFamily: theme.font.textBold, fontSize: 11, color: theme.colors.onSurfaceLight },
@@ -497,60 +498,60 @@ const styles = StyleSheet.create({
   permBanner: {
     position: 'absolute', top: 70, left: theme.spacing.md, right: theme.spacing.md,
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
-    backgroundColor: '#FFF8E1', borderColor: '#FBD38D', borderWidth: 1,
+    backgroundColor: colors.alertSurface, borderColor: colors.alertBorder, borderWidth: 1,
     borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,
   },
-  permText: { flex: 1, fontFamily: theme.font.text, fontSize: 12, color: '#7B5E00' },
+  permText: { flex: 1, fontFamily: theme.font.text, fontSize: 12, color: colors.alertText },
   permBtn: {
-    backgroundColor: '#F59E0B', paddingHorizontal: theme.spacing.md, paddingVertical: 6, borderRadius: theme.radius.pill,
+    backgroundColor: colors.alertAction, paddingHorizontal: theme.spacing.md, paddingVertical: 6, borderRadius: theme.radius.pill,
   },
-  permBtnText: { fontFamily: theme.font.textBold, fontSize: 11, color: '#FFFFFF' },
+  permBtnText: { fontFamily: theme.font.textBold, fontSize: 11, color: colors.white },
 
   recenterBtn: {
     position: 'absolute', right: theme.spacing.md, bottom: 200,
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4,
+    backgroundColor: colors.lightCard, alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4,
   },
 
   hintCard: {
     position: 'absolute', left: theme.spacing.md, right: theme.spacing.md, bottom: theme.spacing.md,
-    backgroundColor: '#FFFFFF', borderRadius: theme.radius.xl,
+    backgroundColor: colors.lightCard, borderRadius: theme.radius.xl,
     padding: theme.spacing.md, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 20, elevation: 6,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 20, elevation: 6,
   },
   hintTitle: { fontFamily: theme.font.displayMedium, fontSize: 20, color: theme.colors.onSurfaceLight },
-  hintSub: { fontFamily: theme.font.text, fontSize: 12, color: '#7A7F88', marginTop: 2 },
+  hintSub: { fontFamily: theme.font.text, fontSize: 12, color: colors.onLightMuted, marginTop: 2 },
 
   routeCard: {
     position: 'absolute',
     left: theme.spacing.md, right: theme.spacing.md, bottom: theme.spacing.md,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.lightCard,
     borderRadius: theme.radius.xl,
     paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md,
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 20, elevation: 6,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 20, elevation: 6,
   },
   routeThumb: { width: 84, height: 76, borderRadius: theme.radius.md, backgroundColor: theme.colors.surfaceTertiary },
-  routeInfo: { flex: 1.4, gap: 4, paddingRight: theme.spacing.md, borderRightWidth: 1, borderRightColor: '#EAECEF' },
+  routeInfo: { flex: 1.4, gap: 4, paddingRight: theme.spacing.md, borderRightWidth: 1, borderRightColor: colors.lightDivider },
   stationName: { fontFamily: theme.font.displayMedium, fontSize: 18, color: theme.colors.onSurfaceLight, letterSpacing: 0.3 },
-  stationAddr: { fontFamily: theme.font.text, fontSize: 11, color: '#6B7280' },
+  stationAddr: { fontFamily: theme.font.text, fontSize: 11, color: colors.onLightSecondary },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  smallIconBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F1F3F6' },
+  smallIconBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.lightCardMuted },
 
-  timelineCol: { flex: 1.5, gap: 8, paddingHorizontal: theme.spacing.md, borderRightWidth: 1, borderRightColor: '#EAECEF' },
+  timelineCol: { flex: 1.5, gap: 8, paddingHorizontal: theme.spacing.md, borderRightWidth: 1, borderRightColor: colors.lightDivider },
   timelineHeader: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
-  timelineTrack: { flex: 1, height: 6, backgroundColor: '#E4E7EB', borderRadius: 3, position: 'relative' },
-  timelineBase: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: 3, backgroundColor: '#E4E7EB' },
-  timelineFill: { position: 'absolute', left: '30%', width: '20%', height: 6, borderRadius: 3, backgroundColor: '#E53E3E' },
+  timelineTrack: { flex: 1, height: 6, backgroundColor: colors.lightTrack, borderRadius: 3, position: 'relative' },
+  timelineBase: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: 3, backgroundColor: colors.lightTrack },
+  timelineFill: { position: 'absolute', left: '30%', width: '20%', height: 6, borderRadius: 3, backgroundColor: colors.danger },
   timelineWarn: {
     position: 'absolute', left: '52%', top: -8,
-    width: 18, height: 18, borderRadius: 9, backgroundColor: '#FF9D2E',
+    width: 18, height: 18, borderRadius: 9, backgroundColor: colors.accentAmber,
     alignItems: 'center', justifyContent: 'center',
   },
   etaRow: { flexDirection: 'row', justifyContent: 'space-between', gap: theme.spacing.sm },
   etaBlock: { alignItems: 'flex-start', gap: 1 },
-  etaLabel: { fontFamily: theme.font.textBold, fontSize: 9, letterSpacing: 1, color: '#7A7F88' },
+  etaLabel: { fontFamily: theme.font.textBold, fontSize: 9, letterSpacing: 1, color: colors.onLightMuted },
   etaTime: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurfaceLight, letterSpacing: 0.3 },
 
   ctaCol: { gap: theme.spacing.sm, alignItems: 'stretch', minWidth: 110 },
@@ -566,25 +567,25 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill, backgroundColor: theme.colors.brand,
     alignItems: 'center', justifyContent: 'center', minHeight: 44,
   },
-  goText: { fontFamily: theme.font.textBold, fontSize: 13, color: '#FFFFFF', letterSpacing: 1.5 },
+  goText: { fontFamily: theme.font.textBold, fontSize: 13, color: colors.white, letterSpacing: 1.5 },
   cancelBtn: {
     paddingHorizontal: theme.spacing.xl, paddingVertical: 10,
-    borderRadius: theme.radius.pill, backgroundColor: '#F1F3F6', alignItems: 'center',
+    borderRadius: theme.radius.pill, backgroundColor: colors.lightCardMuted, alignItems: 'center',
   },
-  cancelText: { fontFamily: theme.font.textBold, fontSize: 12, color: '#4A4E56' },
+  cancelText: { fontFamily: theme.font.textBold, fontSize: 12, color: colors.onLightStrong },
 
   navTopBar: {
     position: 'absolute', top: theme.spacing.md,
     left: theme.spacing.md, right: theme.spacing.md,
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md,
-    backgroundColor: '#FFFFFFEE', borderRadius: theme.radius.pill,
+    backgroundColor: colors.white93, borderRadius: theme.radius.pill,
     paddingHorizontal: theme.spacing.lg, paddingVertical: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.14, shadowRadius: 10, elevation: 4,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.14, shadowRadius: 10, elevation: 4,
     zIndex: 20,
   },
   navTopTitle: { fontFamily: theme.font.displayMedium, fontSize: 16, color: theme.colors.onSurfaceLight, letterSpacing: 0.3 },
-  navTopSub: { fontFamily: theme.font.text, fontSize: 11, color: '#6B7280', marginTop: 1 },
-  timePillCompact: { paddingHorizontal: theme.spacing.md, paddingVertical: 4, backgroundColor: '#F1F3F6', borderRadius: theme.radius.pill },
+  navTopSub: { fontFamily: theme.font.text, fontSize: 11, color: colors.onLightSecondary, marginTop: 1 },
+  timePillCompact: { paddingHorizontal: theme.spacing.md, paddingVertical: 4, backgroundColor: colors.lightCardMuted, borderRadius: theme.radius.pill },
 
   layerWrap: {
     position: 'absolute', right: theme.spacing.md, top: 80,
@@ -597,23 +598,23 @@ const styles = StyleSheet.create({
   },
   layerBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4,
+    backgroundColor: colors.lightCard, alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4,
   },
   layerMenu: {
-    backgroundColor: '#FFFFFF', borderRadius: theme.radius.md,
+    backgroundColor: colors.lightCard, borderRadius: theme.radius.md,
     padding: 6,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 4,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 4,
     minWidth: 140,
   },
   tokenMenu: {
     marginTop: theme.spacing.sm, width: 250,
-    backgroundColor: '#FFFFFF', borderRadius: theme.radius.md, padding: theme.spacing.md,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 4,
+    backgroundColor: colors.lightCard, borderRadius: theme.radius.md, padding: theme.spacing.md,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 4,
   },
   tokenTitle: { fontFamily: theme.font.textBold, fontSize: 12, color: theme.colors.onSurfaceLight, marginBottom: theme.spacing.sm },
   tokenInput: {
-    borderWidth: 1, borderColor: '#D9DDE3', borderRadius: theme.radius.sm,
+    borderWidth: 1, borderColor: colors.lightBorder, borderRadius: theme.radius.sm,
     color: theme.colors.onSurfaceLight, fontFamily: theme.font.text, fontSize: 11,
     paddingHorizontal: theme.spacing.sm, paddingVertical: 8,
   },
@@ -622,12 +623,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.brand, borderRadius: theme.radius.pill,
     paddingHorizontal: theme.spacing.md, paddingVertical: 7,
   },
-  tokenSaveText: { fontFamily: theme.font.textBold, fontSize: 11, color: '#FFFFFF' },
+  tokenSaveText: { fontFamily: theme.font.textBold, fontSize: 11, color: colors.white },
   layerOpt: {
     flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,
     borderRadius: theme.radius.sm,
   },
-  layerOptActive: { backgroundColor: '#EAF1FF' },
+  layerOptActive: { backgroundColor: colors.brandSoft },
   layerLbl: { fontFamily: theme.font.textBold, fontSize: 12, color: theme.colors.onSurfaceLight, letterSpacing: 0.3 },
 });

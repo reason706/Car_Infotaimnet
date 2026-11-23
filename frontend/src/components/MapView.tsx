@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Path, Rect, G, Defs, LinearGradient, Stop, Line, Circle } from 'react-native-svg';
 import { theme } from '@/src/theme';
+import { mapColors } from '@/src/ui';
 
 type Props = {
   width?: number;
@@ -23,13 +24,14 @@ const STOPS = (w: number, h: number) => [
 
 export function MapView({ width = 900, height = 600, vehiclePos, variant = 'light', showRoute = true, testID }: Props) {
   const light = variant === 'light';
-  const bg1 = light ? '#F5F6F8' : '#0d1219';
-  const bg2 = light ? '#E9ECF0' : '#050608';
-  const streetColor = light ? '#D4D8DE' : theme.colors.border;
-  const majorStreet = light ? '#B8BEC7' : theme.colors.borderStrong;
-  const waterColor = light ? '#A8C8E0' : '#0b1830';
-  const parkColor = light ? '#CCE1CE' : '#0f2a1a';
-  const routeColor = '#2E7CF6';
+  const m = light ? mapColors.light : mapColors.dark;
+  const bg1 = m.bg1;
+  const bg2 = m.bg2;
+  const streetColor = m.street;
+  const majorStreet = m.majorStreet;
+  const waterColor = m.water;
+  const parkColor = m.park;
+  const routeColor = mapColors.route;
 
   const rows = 7;
   const cols = 9;
@@ -115,14 +117,14 @@ export function MapView({ width = 900, height = 600, vehiclePos, variant = 'ligh
             {/* Alt segment (traffic red) */}
             <Path
               d={`M ${stops[1].x} ${stops[1].y} L ${stops[1].x + 40} ${stops[1].y - 6}`}
-              stroke="#E53E3E"
+              stroke={mapColors.destination}
               strokeWidth={5}
               strokeLinecap="round"
             />
 
             {/* Origin marker */}
             <Circle cx={vehicleStop.x} cy={vehicleStop.y} r={9} fill={routeColor} />
-            <Circle cx={vehicleStop.x} cy={vehicleStop.y} r={4} fill="#FFFFFF" />
+            <Circle cx={vehicleStop.x} cy={vehicleStop.y} r={4} fill={mapColors.marker} />
 
             {/* Destination pin */}
             <Path
@@ -131,7 +133,7 @@ export function MapView({ width = 900, height = 600, vehiclePos, variant = 'ligh
                   C ${stops[stops.length - 1].x + 14} ${stops[stops.length - 1].y - 6}, ${stops[stops.length - 1].x + 14} ${stops[stops.length - 1].y - 26}, ${stops[stops.length - 1].x} ${stops[stops.length - 1].y - 26} Z`}
               fill={routeColor}
             />
-            <Circle cx={stops[stops.length - 1].x} cy={stops[stops.length - 1].y - 16} r={5} fill="#FFFFFF" />
+            <Circle cx={stops[stops.length - 1].x} cy={stops[stops.length - 1].y - 16} r={5} fill={mapColors.marker} />
           </>
         )}
       </Svg>
